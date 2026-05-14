@@ -1,0 +1,351 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f6fa;
+  color: #1f2a44;
+}
+
+.financeiro-page {
+  min-height: 100vh;
+  padding: 28px;
+}
+
+/* TÍTULO */
+.financeiro-titulo {
+  margin: 0 0 22px;
+  font-size: 28px;
+  color: #1f2a44;
+}
+
+/* FILTROS */
+.financeiro-filtros {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.financeiro-filtros select {
+  padding: 11px 14px;
+  border: 1px solid #d9dce5;
+  border-radius: 10px;
+  background: white;
+  color: #1f2a44;
+  font-weight: bold;
+  outline: none;
+}
+
+.financeiro-filtros button,
+.financeiro-header button,
+#modalCriar button {
+  background: #4f6df5;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.financeiro-filtros button:hover,
+.financeiro-header button:hover,
+#modalCriar button:hover {
+  opacity: 0.9;
+}
+
+/* HEADER MÊS */
+.financeiro-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 22px;
+  background: white;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.financeiro-header h2 {
+  min-width: 190px;
+  text-align: center;
+  margin: 0;
+  font-size: 22px;
+}
+
+/* CALENDÁRIO */
+#calendario {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.financeiro-dia-semana {
+  text-align: center;
+  font-weight: bold;
+  padding: 12px;
+  background: #edf0f7;
+  color: #4f5565;
+  border-radius: 10px;
+}
+
+.financeiro-dia {
+  background: #fff;
+  border-radius: 14px;
+  padding: 8px;
+  min-height: 145px;
+  border: 1px solid #e1e5ef;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.035);
+}
+
+.financeiro-dia b {
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #1f2a44;
+}
+
+/* EVENTOS */
+.financeiro-evento {
+  padding: 7px;
+  border-radius: 8px;
+  margin-top: 5px;
+  font-size: 11px;
+  color: white;
+  cursor: pointer;
+  transition: 0.2s;
+  line-height: 1.25;
+}
+
+.financeiro-evento:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+.financeiro-evento strong {
+  display: block;
+  margin-bottom: 3px;
+}
+
+.financeiro-status-texto {
+  display: inline-block;
+  font-size: 10px;
+  opacity: 0.95;
+  text-transform: uppercase;
+}
+
+/* CORES POR MÓDULO */
+.financeiro-verde {
+  background: #28a745;
+}
+
+.financeiro-azul {
+  background: #4f6df5;
+}
+
+.financeiro-laranja {
+  background: #ff8c00;
+}
+
+/* BOTÃO + MAIS */
+.financeiro-mais {
+  margin-top: 6px;
+  padding: 5px 8px;
+  border: none;
+  border-radius: 8px;
+  background: #f0f2f7;
+  color: #333;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.financeiro-mais:hover {
+  background: #e2e6ef;
+}
+
+/* MODAIS */
+.financeiro-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(16, 22, 35, 0.55);
+  z-index: 999;
+}
+
+.financeiro-modal-content {
+  background: #fff;
+  padding: 22px;
+  margin: 5% auto;
+  width: 520px;
+  max-width: calc(100% - 28px);
+  max-height: 82vh;
+  overflow-y: auto;
+  border-radius: 16px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.22);
+}
+
+.financeiro-close {
+  float: right;
+  cursor: pointer;
+  font-size: 24px;
+  font-weight: bold;
+  color: #6c7280;
+}
+
+.financeiro-close:hover {
+  color: #1f2a44;
+}
+
+.financeiro-modal-titulo {
+  margin: 0 0 16px;
+  color: #1f2a44;
+}
+
+/* MODAL CRIAR */
+#modalCriar h3 {
+  margin: 0 0 18px;
+  color: #1f2a44;
+}
+
+#modalCriar input,
+#modalCriar select {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid #d9dce5;
+  border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+  background: white;
+}
+
+#modalCriar input[type="file"] {
+  border: 2px dashed #d7dce8;
+  background: #fafbff;
+}
+
+#modalCriar button {
+  width: 100%;
+  margin-top: 8px;
+  font-size: 15px;
+}
+
+/* CARD DO MODAL */
+.financeiro-card-lista {
+  border: 1px solid #e1e5ef;
+  border-radius: 12px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+}
+
+.financeiro-card-titulo {
+  padding: 12px;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.financeiro-card-icone {
+  font-size: 16px;
+}
+
+.financeiro-card-info {
+  background: #fff;
+  color: #333;
+  padding: 14px;
+}
+
+.financeiro-card-info p {
+  margin: 7px 0;
+  font-size: 13px;
+}
+
+.financeiro-linha-topo {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.financeiro-badge-modulo {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: bold;
+  color: white;
+}
+
+/* AÇÕES */
+.financeiro-acoes {
+  margin-top: 12px;
+}
+
+.financeiro-acoes a {
+  display: inline-block;
+  text-decoration: none;
+  background: #4f6df5;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.financeiro-acoes a:hover {
+  opacity: 0.9;
+}
+
+/* RESPONSIVO */
+@media (max-width: 900px) {
+  .financeiro-page {
+    padding: 14px;
+  }
+
+  #calendario {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .financeiro-dia-semana {
+    display: none;
+  }
+
+  .financeiro-header {
+    flex-wrap: wrap;
+  }
+
+  .financeiro-header h2 {
+    min-width: auto;
+    width: 100%;
+    order: -1;
+  }
+}
+
+@media (max-width: 520px) {
+  #calendario {
+    grid-template-columns: 1fr;
+  }
+
+  .financeiro-filtros {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .financeiro-filtros select,
+  .financeiro-filtros button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Banco de Dados</title>
+  <link rel="stylesheet" href="css/banco_dados.css">
+</head>
+<body>
+
+<div class="bd-page">
+  <div class="bd-container">
+
+    <div class="bd-topo">
+      <div class="bd-logo-titulo">
+        <div class="bd-logo">🛠</div>
+        <h1>ADMINISTRADOR – GESTÃO DE RH</h1>
+      </div>
+
+      <div class="bd-topo-direita">
+        <button class="bd-voltar" onclick="voltar()">← Voltar</button>
+        <span id="usuarioLogado" class="bd-usuario">NOME DO USUÁRIO</span>
+        <button onclick="window.location.href='auditoria.html'">Ver Auditoria</button>
+      </div>
+    </div>
+
+    <p class="bd-subtitulo">Banco de Dados Geral</p>
+
+    <div class="bd-barra">
+      <input
+        type="text"
+        id="filtroBusca"
+        placeholder="PESQUISAR"
+        oninput="aoFiltrar()"
+      >
+
+      <button class="bd-add-btn" onclick="atualizarDados()">Atualizar</button>
+    </div>
+
+    <div class="bd-filtros">
+      <button class="bd-tab active" onclick="setFiltroModulo('', this)">TODOS</button>
+      <button class="bd-tab" onclick="setFiltroModulo('notas', this)">NOTAS</button>
+      <button class="bd-tab" onclick="setFiltroModulo('diarias', this)">DIÁRIAS</button>
+      <button class="bd-tab" onclick="setFiltroModulo('admissoes', this)">ADMISSÃO/DEMISSÃO</button>
+    </div>
+
+    <h2 class="bd-registros-titulo">Mais registros</h2>
+
+    <div class="bd-tabela-wrapper">
+      <table class="bd-tabela">
+        <thead>
+          <tr>
+            <th>NOME</th>
+            <th>EMAIL</th>
+            <th>DEPARTAMENTO</th>
+            <th>TIPO</th>
+            <th>PDF</th>
+            <th>ARMAZENAMENTO</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaBody"></tbody>
+      </table>
+    </div>
+
+    <div id="bd-vazio" class="bd-vazio" style="display: none;">
+      Nenhum registro encontrado.
+    </div>
+
+    <div class="bd-paginacao" id="bdPaginacao">
+      <button class="bd-page-btn" onclick="paginaAnterior()">Anterior</button>
+
+      <div class="bd-page-numeros" id="bdPageNumeros"></div>
+
+      <button class="bd-page-btn bd-page-btn-primary" onclick="proximaPagina()">Próximo</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/banco_dados.js"></script>
+</body>
+</html>

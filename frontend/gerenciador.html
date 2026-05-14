@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerenciador</title>
+  <link rel="stylesheet" href="css/gerenciador.css">
+</head>
+<body>
+
+<div class="ger-page">
+  <div class="ger-container">
+    <div class="gerenciador-topo">
+      <button id="btnVoltar" class="btn-voltar" onclick="voltar()">← Voltar</button>
+  <h2 id="titulo"></h2>
+</div>
+
+    <div class="ger-topbar">
+      <div class="ger-title-box">
+        <div class="ger-icon">G</div>
+        <div>
+          <h1 id="tituloDepartamento">Gerenciador - SAFE</h1>
+        </div>
+      </div>
+
+      <div class="ger-top-actions">
+        <button class="ger-outline-btn" onclick="loadDocs()">🔄 Atualizar</button>
+        <button class="ger-primary-btn" onclick="abrirModal()">+ Adicionar Novo Registro</button>
+      </div>
+    </div>
+
+    <div class="ger-filters-row">
+      <input
+        type="text"
+        id="busca"
+        class="ger-search"
+        placeholder="PESQUISAR"
+        oninput="loadDocs()"
+      >
+    </div>
+
+    <div class="ger-tabs">
+      <button class="ger-tab active" onclick="setFiltro('ativo', this)">ATIVO</button>
+      <button class="ger-tab" onclick="setFiltro('inativo', this)">INATIVO</button>
+      <button class="ger-tab" onclick="setFiltro('regional', this)">REGIONAL</button>
+    </div>
+
+    <div class="ger-info-row">
+      <p id="contadorDocs">0 documento(s) encontrado(s)</p>
+      <p class="ger-status">Status: <span id="statusAtual">ATIVO</span></p>
+    </div>
+
+    <div id="lista" class="ger-grid"></div>
+
+  </div>
+</div>
+
+<div id="modal" class="ger-modal">
+  <div class="ger-modal-content">
+    <div class="ger-modal-header">
+      <h2 id="modalTitulo">Adicionar Documento em ATIVO</h2>
+      <button class="ger-close-btn" onclick="fecharModal()">✕</button>
+    </div>
+
+    <div class="ger-modal-info">
+      Este documento será adicionado em:
+      <strong id="modalTipoTexto">ATIVO</strong>
+    </div>
+
+    <label class="ger-label">Nome</label>
+    <input type="text" id="nome" class="ger-input" placeholder="Digite nome">
+
+    <label class="ger-label">Embalagem</label>
+    <input type="text" id="embalagem" class="ger-input" placeholder="Digite embalagem">
+
+    <label class="ger-label">Arquivo PDF</label>
+    <div class="ger-upload-box">
+      <input type="file" id="file" accept="application/pdf">
+    </div>
+
+    <button class="ger-primary-btn ger-full-btn" onclick="upload()" id="btnAdicionarTipo">
+      Adicionar em ATIVO
+    </button>
+  </div>
+</div>
+
+<script src="js/gerenciador.js"></script>
+</body>
+</html>

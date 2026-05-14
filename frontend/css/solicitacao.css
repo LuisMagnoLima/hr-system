@@ -1,0 +1,141 @@
+:root {
+  --cor-modulo: #4f6df5;
+  --cor-modulo-clara: #edf2ff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f6fa;
+  color: #1f2a44;
+}
+
+.sol-page {
+  min-height: 100vh;
+  padding: 30px;
+}
+
+.sol-container {
+  max-width: 760px;
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 18px;
+  padding: 28px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+}
+
+.sol-header {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.sol-header h1 {
+  margin: 0;
+  font-size: 28px;
+  color: #1f2a44;
+}
+
+.sol-header p {
+  margin: 8px 0 0;
+  color: #6a7388;
+}
+
+.sol-back-btn {
+  background: var(--cor-modulo);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.sol-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.sol-tab {
+  border: none;
+  background: #f0f2f5;
+  color: #555;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.sol-tab.active {
+  background: var(--cor-modulo);
+  color: white;
+}
+
+.sol-info-box {
+  background: #f6f8fc;
+  border: 1px solid #e6eaf5;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 20px;
+  color: #666;
+}
+
+.sol-info-box strong {
+  color: var(--cor-modulo);
+}
+
+.sol-label {
+  display: block;
+  margin: 14px 0 8px;
+  font-weight: bold;
+  color: #1f2a44;
+}
+
+.sol-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  outline: none;
+  font-size: 14px;
+  background: #fff;
+}
+
+.sol-upload-box {
+  border: 2px dashed #d7dce8;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  margin-top: 8px;
+  margin-bottom: 20px;
+  background: #fafbff;
+}
+
+.sol-upload-box input {
+  width: 100%;
+}
+
+.sol-send-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: var(--cor-modulo);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.sol-send-btn:hover,
+.sol-back-btn:hover {
+  opacity: 0.92;
+}

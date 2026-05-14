@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Solicitação de Documento</title>
+  <link rel="stylesheet" href="css/solicitacao.css">
+</head>
+<body>
+
+<div class="sol-page">
+  <div class="sol-container">
+
+    <div class="sol-header">
+      <button id="btnVoltar" class="sol-back-btn" onclick="voltar()">← Voltar</button>
+      <div>
+        <h1 id="solTitulo">Solicitação - SAFE</h1>
+        <p id="solSubtitulo">Envie o documento para um usuário alimentar o sistema</p>
+      </div>
+    </div>
+
+    <div class="sol-tabs">
+      <button class="sol-tab active" onclick="setTipo('ativo', this)">ATIVO</button>
+      <button class="sol-tab" onclick="setTipo('inativo', this)">INATIVO</button>
+      <button class="sol-tab" onclick="setTipo('regional', this)">REGIONAL</button>
+    </div>
+
+    <div class="sol-info-box">
+      Este documento será enviado como:
+      <strong id="tipoAtualTexto">ATIVO</strong>
+    </div>
+
+    <label class="sol-label">Enviar para</label>
+    <select id="destinatario" class="sol-input">
+      <option value="">Selecione um usuário</option>
+    </select>
+
+    <label class="sol-label">Nome do arquivo</label>
+    <input type="text" id="nome" class="sol-input" placeholder="Digite o nome do arquivo">
+
+    <label class="sol-label">Embalagem / Armazenamento</label>
+    <input type="text" id="embalagem" class="sol-input" placeholder="Digite a embalagem">
+
+    <label class="sol-label">Arquivo PDF</label>
+    <div class="sol-upload-box">
+      <input type="file" id="file" accept="application/pdf">
+    </div>
+
+    <button id="btnEnviar" class="sol-send-btn" onclick="enviarSolicitacao()">
+      Enviar solicitação
+    </button>
+
+  </div>
+</div>
+
+<script src="js/solicitacao.js"></script>
+</body>
+</html>

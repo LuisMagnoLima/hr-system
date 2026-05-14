@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Departamentos</title>
+  <link rel="stylesheet" href="css/departamentos.css">
+</head>
+<body>
+
+<div class="deps-page">
+  <aside class="deps-sidebar">
+    <button class="deps-back" onclick="voltarMenu()">← Voltar ao Menu</button>
+
+    <h2 id="menuEscolhidoLateral">Módulo</h2>
+
+    <p class="deps-user-label">Usuário logado:</p>
+    <p class="deps-user-email" id="userEmail">email@exemplo.com</p>
+  </aside>
+
+  <main class="deps-main">
+    <h1 id="menuEscolhidoTitulo">Módulo - Secretarias</h1>
+    <p class="deps-subtitle">Selecione a secretaria:</p>
+
+    <div class="deps-grid" id="deps"></div>
+  </main>
+</div>
+
+<script src="js/departamentos.js"></script>
+</body>
+</html>

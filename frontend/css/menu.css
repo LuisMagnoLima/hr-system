@@ -1,0 +1,188 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f6fa;
+  color: #1f2a44;
+}
+
+.menu-page {
+  display: flex;
+  min-height: 100vh;
+}
+
+.menu-sidebar {
+  width: 285px;
+  background: #ffffff;
+  border-right: 1px solid #e9e9e9;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.menu-sidebar h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #1f2a44;
+}
+
+.menu-user-label {
+  margin: 10px 0 0 0;
+  color: #7a7a7a;
+  font-size: 14px;
+}
+
+.menu-user-email {
+  margin: 0;
+  color: #1f2a44;
+  font-size: 16px;
+  word-break: break-word;
+}
+
+.menu-logout {
+  margin-top: 20px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid #e74c3c;
+  background: white;
+  color: #e74c3c;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.menu-logout:hover {
+  background: #fff4f2;
+}
+
+.menu-main {
+  flex: 1;
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.menu-main h1 {
+  margin: 30px 0 8px;
+  font-size: 34px;
+  text-align: center;
+  color: #1f2a44;
+}
+
+.menu-subtitle {
+  margin: 0 0 40px;
+  font-size: 16px;
+  color: #70778a;
+}
+
+.menu-grid {
+  width: 100%;
+  max-width: 650px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
+  gap: 26px;
+}
+
+.menu-card {
+  background: white;
+  border-radius: 16px;
+  padding: 34px 24px;
+  border: 1px solid #ececec;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  text-align: center;
+  transition: 0.2s ease;
+}
+
+.menu-card:hover {
+  transform: translateY(-3px);
+}
+
+.menu-card h3 {
+  margin: 0 0 12px;
+  font-size: 28px;
+  color: #1f2a44;
+}
+
+.menu-card p {
+  margin: 0;
+  color: #7a7a7a;
+  font-size: 15px;
+}
+
+.menu-card.diarias {
+  border-top: 6px solid #28a745;
+}
+
+.menu-card.notas {
+  border-top: 6px solid #4f6df5;
+}
+
+.menu-card.admissoes {
+  border-top: 6px solid #ff8c00;
+}
+
+@media (max-width: 900px) {
+  .menu-page {
+    flex-direction: column;
+  }
+
+  .menu-sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e9e9e9;
+  }
+
+  .menu-main {
+    padding: 28px 16px;
+  }
+
+  .menu-main h1 {
+    font-size: 28px;
+  }
+
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.menu-notification-box {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #f5f7fb;
+  border: 1px solid #e4e8f0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: pointer;
+  color: #1f2a44;
+  font-weight: bold;
+}
+
+.menu-notification-box:hover {
+  background: #eef3ff;
+}
+
+.menu-bell {
+  font-size: 18px;
+}
+
+.menu-badge {
+  margin-left: auto;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #e74c3c;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 0 8px;
+}

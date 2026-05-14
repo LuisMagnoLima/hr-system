@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Auditoria</title>
+  <link rel="stylesheet" href="css/auditoria.css">
+</head>
+<body>
+
+<div class="auditoria-container">
+  <div class="auditoria-topo">
+    <button class="btn-voltar" onclick="voltarBanco()">← Voltar</button>
+    <h1>📊 Auditoria do Sistema</h1>
+  </div>
+
+  <div class="auditoria-resumo">
+    <div class="resumo-card">
+      <span class="resumo-titulo">Total de registros</span>
+      <strong id="totalRegistros">0</strong>
+    </div>
+
+    <div class="resumo-card">
+      <span class="resumo-titulo">Último usuário</span>
+      <strong id="ultimoUsuario">-</strong>
+    </div>
+
+    <div class="resumo-card">
+      <span class="resumo-titulo">Última ação</span>
+      <strong id="ultimaAcao">-</strong>
+    </div>
+  </div>
+
+  <div class="filtros">
+    <input type="text" id="filtroUsuario" placeholder="Filtrar por usuário">
+
+    <select id="filtroAcao">
+      <option value="">Todas ações</option>
+      <option value="login_sucesso">Login sucesso</option>
+      <option value="login_falhou">Login falhou</option>
+      <option value="upload_documento">Upload</option>
+      <option value="delete_documento">Delete</option>
+      <option value="criar_solicitacao">Solicitação criada</option>
+      <option value="processar_solicitacao">Solicitação processada</option>
+    </select>
+
+    <input type="date" id="filtroData">
+
+    <button onclick="carregarAuditoria()">Buscar</button>
+    <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
+  </div>
+
+  <div id="lista"></div>
+</div>
+
+<script src="js/auditoria.js"></script>
+</body>
+</html>

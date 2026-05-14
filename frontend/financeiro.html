@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Financeiro</title>
+  <link rel="stylesheet" href="css/financeiro.css">
+</head>
+
+<body>
+
+<div class="financeiro-page">
+
+  <h1 class="financeiro-titulo">📅 Calendário Financeiro</h1>
+
+  <div class="financeiro-filtros">
+    <select id="filtroDepartamento" onchange="setFiltroDepartamento()">
+      <option value="">Todas as secretarias</option>
+      <option value="AGERP">AGERP</option>
+      <option value="ITERMA">ITERMA</option>
+      <option value="SAFE">SAFE</option>
+      <option value="SEDES">SEDES</option>
+      <option value="SEGOV">SEGOV</option>
+    </select>
+
+    <button onclick="abrirModalCriar()">+ Criar</button>
+  </div>
+
+  <div class="financeiro-header">
+    <button onclick="mesAnterior()">◀</button>
+    <h2 id="mesAno"></h2>
+    <button onclick="proximoMes()">▶</button>
+  </div>
+
+  <div id="calendario"></div>
+
+</div>
+
+<div id="modal" class="financeiro-modal">
+  <div class="financeiro-modal-content">
+    <span onclick="fecharModal()" class="financeiro-close">&times;</span>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div id="modalCriar" class="financeiro-modal">
+  <div class="financeiro-modal-content">
+    <span onclick="fecharModalCriar()" class="financeiro-close">&times;</span>
+
+    <h3>Adicionar Documento Financeiro</h3>
+
+    <input id="finNome" placeholder="Nome do documento">
+    <input id="finEmbalagem" placeholder="Armazenamento / Embalagem">
+
+    <select id="finDepartamento">
+      <option value="AGERP">AGERP</option>
+      <option value="ITERMA">ITERMA</option>
+      <option value="SAFE">SAFE</option>
+      <option value="SEDES">SEDES</option>
+      <option value="SEGOV">SEGOV</option>
+    </select>
+
+    <select id="finModulo">
+      <option value="notas">Notas</option>
+      <option value="diarias">Diárias</option>
+      <option value="admissoes">Admissão/Demissão</option>
+    </select>
+
+    <select id="finTipo">
+      <option value="ativo">Ativo</option>
+      <option value="inativo">Inativo</option>
+      <option value="regional">Regional</option>
+    </select>
+
+    <input type="file" id="finFile" accept="application/pdf">
+
+    <button onclick="uploadFinanceiro()">Salvar</button>
+  </div>
+</div>
+
+<script src="js/financeiro.js"></script>
+
+</body>
+</html>

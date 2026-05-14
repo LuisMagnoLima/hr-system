@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Menu</title>
+  <link rel="stylesheet" href="css/menu.css">
+</head>
+<body>
+
+<div class="menu-page">
+  <aside class="menu-sidebar">
+  <h2>HR System</h2>
+
+  <p class="menu-user-label">Usuário logado:</p>
+  <p class="menu-user-email" id="userEmail">email@exemplo.com</p>
+
+  <div class="menu-notification-box" onclick="abrirNotificacoes()">
+  <span class="menu-bell">🔔</span>
+  <span>Notificações</span>
+  <span id="notificationCount" class="menu-badge" style="display: none;">0</span>
+</div>
+
+  <button class="menu-logout" onclick="logout()">Sair</button>
+</aside>
+
+<main class="menu-main">
+  <h1>Bem-vindo ao Sistema HR</h1>
+  <p class="menu-subtitle">Selecione um módulo para começar:</p>
+
+  <div id="menuCards" class="menu-grid"></div>
+</main>
+
+<script src="js/menu.js"></script>
+</body>
+</html>
