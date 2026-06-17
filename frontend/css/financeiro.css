@@ -349,3 +349,93 @@ body {
     width: 100%;
   }
 }
+.financeiro-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f5f7fb;
+  border: 1px solid #e1e5ef;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+  font-weight: bold;
+  color: #1f2a44;
+}
+
+.financeiro-check input {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.financeiro-check-mini {
+  display: block;
+  margin-top: 4px;
+  font-size: 10px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.financeiro-confirmado-card {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.financeiro-acoes {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.financeiro-acoes button {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-editar {
+  background: #ffc107;
+  color: #1f2a44;
+}
+
+.btn-excluir {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-editar:hover,
+.btn-excluir:hover {
+  opacity: 0.9;
+}
+
+#modalEditar h3 {
+  margin: 0 0 18px;
+  color: #1f2a44;
+}
+
+#modalEditar input,
+#modalEditar select {
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid #d9dce5;
+  border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+  background: white;
+}
+
+#modalEditar button {
+  width: 100%;
+  margin-top: 8px;
+  font-size: 15px;
+  background: #4f6df5;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: bold;
+}

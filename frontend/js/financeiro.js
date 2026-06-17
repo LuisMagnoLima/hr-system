@@ -13,6 +13,14 @@ function setFiltroDepartamento() {
   renderCalendario()
 }
 
+function getUser() {
+  const token = localStorage.getItem("token")
+  if (!token) return "Desconhecido"
+
+  const payload = JSON.parse(atob(token.split(".")[1]))
+  return payload.email
+}
+
 function renderCalendario() {
   const calendario = document.getElementById("calendario")
   calendario.innerHTML = ""
@@ -70,14 +78,15 @@ function renderCalendario() {
       if (doc.modulo === "notas") cor = "financeiro-azul"
       if (doc.modulo === "admissoes") cor = "financeiro-laranja"
 
+      const confirmado = doc.confirmado_financeiro ? "financeiro-confirmado-card" : ""
+
       const el = document.createElement("div")
-      el.className = `financeiro-evento ${cor}`
+      el.className = `financeiro-evento ${cor} ${confirmado}`
 
       el.innerHTML = `
         <strong>${doc.nome}</strong>
-        <span class="financeiro-status-texto">
-          ${doc.tipo}
-        </span>
+        <span class="financeiro-status-texto">${doc.tipo}</span>
+        ${doc.confirmado_financeiro ? `<span class="financeiro-check-mini">✅ Confirmado</span>` : ""}
       `
 
       el.onclick = () => abrirModal(doc)
@@ -110,22 +119,24 @@ function mesAnterior() {
   renderCalendario()
 }
 
+function getCorClasse(modulo) {
+  if (modulo === "notas") return "financeiro-azul"
+  if (modulo === "admissoes") return "financeiro-laranja"
+  return "financeiro-verde"
+}
+
+function getIcone(modulo) {
+  if (modulo === "notas") return "📝"
+  if (modulo === "admissoes") return "👥"
+  return "📋"
+}
+
 function abrirModal(doc) {
   const modal = document.getElementById("modal")
   const body = document.getElementById("modal-body")
 
-  let corClasse = "financeiro-verde"
-  let icone = "📋"
-
-  if (doc.modulo === "notas") {
-    corClasse = "financeiro-azul"
-    icone = "📝"
-  }
-
-  if (doc.modulo === "admissoes") {
-    corClasse = "financeiro-laranja"
-    icone = "👥"
-  }
+  const corClasse = getCorClasse(doc.modulo)
+  const icone = getIcone(doc.modulo)
 
   body.innerHTML = `
     <div class="financeiro-card-lista">
@@ -136,26 +147,28 @@ function abrirModal(doc) {
 
       <div class="financeiro-card-info">
         <div class="financeiro-linha-topo">
-          <span class="financeiro-badge-modulo ${corClasse}">
-            ${doc.modulo}
-          </span>
-
-          <span class="financeiro-status-texto">
-            ${doc.tipo}
-          </span>
+          <span class="financeiro-badge-modulo ${corClasse}">${doc.modulo}</span>
+          <span class="financeiro-status-texto">${doc.tipo}</span>
         </div>
+
+        <label class="financeiro-check">
+          <input type="checkbox" ${doc.confirmado_financeiro ? "checked" : ""}
+            onchange="confirmarDocumento('${doc._id}', this.checked)">
+          Confirmado pelo financeiro
+        </label>
 
         <p><b>Secretaria:</b> ${doc.departamento}</p>
         <p><b>Origem:</b> ${doc.origem || "gerenciador"}</p>
         <p><b>Protegido exclusão:</b> ${doc.protegido_exclusao ? "Sim" : "Não"}</p>
+        <p><b>Confirmado por:</b> ${doc.confirmado_por || "-"}</p>
         <p><b>Enviado por:</b> ${doc.anexado_por}</p>
         <p><b>Data:</b> ${doc.dia}/${doc.mes}/${doc.ano} ${doc.hora}</p>
         <p><b>Arquivo salvo:</b> ${doc.arquivo}</p>
 
         <div class="financeiro-acoes">
-          <a href="http://localhost:5000/files/${doc.arquivo}" target="_blank">
-            📥 Baixar arquivo
-          </a>
+          <a href="http://localhost:5000/files/${doc.arquivo}" target="_blank">📥 Baixar arquivo</a>
+          <button class="btn-editar" onclick='abrirModalEditar(${JSON.stringify(doc)})'>✏️ Editar</button>
+          <button class="btn-excluir" onclick="excluirDocumento('${doc._id}')">🗑 Excluir</button>
         </div>
       </div>
     </div>
@@ -177,18 +190,8 @@ function abrirListaDia(eventos) {
   let html = `<h3 class="financeiro-modal-titulo">Arquivos do dia</h3>`
 
   ordenados.forEach(doc => {
-    let corClasse = "financeiro-verde"
-    let icone = "📋"
-
-    if (doc.modulo === "notas") {
-      corClasse = "financeiro-azul"
-      icone = "📝"
-    }
-
-    if (doc.modulo === "admissoes") {
-      corClasse = "financeiro-laranja"
-      icone = "👥"
-    }
+    const corClasse = getCorClasse(doc.modulo)
+    const icone = getIcone(doc.modulo)
 
     html += `
       <div class="financeiro-card-lista">
@@ -198,27 +201,13 @@ function abrirListaDia(eventos) {
         </div>
 
         <div class="financeiro-card-info">
-          <div class="financeiro-linha-topo">
-            <span class="financeiro-badge-modulo ${corClasse}">
-              ${doc.modulo}
-            </span>
-
-            <span class="financeiro-status-texto">
-              ${doc.tipo}
-            </span>
-          </div>
-
           <p><b>Secretaria:</b> ${doc.departamento}</p>
-          <p><b>Origem:</b> ${doc.origem || "gerenciador"}</p>
-          <p><b>Protegido exclusão:</b> ${doc.protegido_exclusao ? "Sim" : "Não"}</p>
-          <p><b>Enviado por:</b> ${doc.anexado_por}</p>
-          <p><b>Data:</b> ${doc.dia}/${doc.mes}/${doc.ano} ${doc.hora}</p>
-          <p><b>Arquivo salvo:</b> ${doc.arquivo}</p>
+          <p><b>Tipo:</b> ${doc.tipo}</p>
+          <p><b>Confirmado:</b> ${doc.confirmado_financeiro ? "Sim" : "Não"}</p>
 
           <div class="financeiro-acoes">
-            <a href="http://localhost:5000/files/${doc.arquivo}" target="_blank">
-              📥 Baixar arquivo
-            </a>
+            <button class="btn-editar" onclick='abrirModalEditar(${JSON.stringify(doc)})'>✏️ Editar</button>
+            <button class="btn-excluir" onclick="excluirDocumento('${doc._id}')">🗑 Excluir</button>
           </div>
         </div>
       </div>
@@ -227,6 +216,96 @@ function abrirListaDia(eventos) {
 
   body.innerHTML = html
   modal.style.display = "block"
+}
+
+async function confirmarDocumento(id, confirmado) {
+  const res = await fetch(`http://localhost:5000/documents/${id}/confirmar`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      usuario: getUser(),
+      confirmado
+    })
+  })
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    alert(data.error || "Erro ao confirmar documento")
+    return
+  }
+
+  await carregarDados()
+}
+
+function abrirModalEditar(doc) {
+  document.getElementById("editId").value = doc._id
+  document.getElementById("editNome").value = doc.nome || ""
+  document.getElementById("editEmbalagem").value = doc.embalagem || ""
+  document.getElementById("editDepartamento").value = doc.departamento || "SAFE"
+  document.getElementById("editModulo").value = doc.modulo || "notas"
+  document.getElementById("editTipo").value = doc.tipo || "ativo"
+
+  document.getElementById("modalEditar").style.display = "block"
+}
+
+function fecharModalEditar() {
+  document.getElementById("modalEditar").style.display = "none"
+}
+
+async function salvarEdicao() {
+  const id = document.getElementById("editId").value
+
+  const dados = {
+    usuario: getUser(),
+    nome: document.getElementById("editNome").value.trim(),
+    embalagem: document.getElementById("editEmbalagem").value.trim(),
+    departamento: document.getElementById("editDepartamento").value,
+    modulo: document.getElementById("editModulo").value,
+    tipo: document.getElementById("editTipo").value
+  }
+
+  if (!dados.nome) {
+    alert("Digite o nome do documento")
+    return
+  }
+
+  const res = await fetch(`http://localhost:5000/documents/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(dados)
+  })
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    alert(data.error || "Erro ao editar")
+    return
+  }
+
+  alert("Documento editado com sucesso")
+  fecharModalEditar()
+  fecharModal()
+  carregarDados()
+}
+
+async function excluirDocumento(id) {
+  if (!confirm("Tem certeza que deseja excluir este documento?")) return
+
+  const res = await fetch(`http://localhost:5000/documents/${id}?usuario=${encodeURIComponent(getUser())}`, {
+    method: "DELETE"
+  })
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    alert(data.error || "Erro ao excluir")
+    return
+  }
+
+  alert("Documento excluído com sucesso")
+  fecharModal()
+  carregarDados()
 }
 
 function abrirModalCriar() {
@@ -239,14 +318,6 @@ function fecharModalCriar() {
 
 function fecharModal() {
   document.getElementById("modal").style.display = "none"
-}
-
-function getUser() {
-  const token = localStorage.getItem("token")
-  if (!token) return "Desconhecido"
-
-  const payload = JSON.parse(atob(token.split(".")[1]))
-  return payload.email
 }
 
 async function uploadFinanceiro() {
@@ -301,14 +372,11 @@ async function uploadFinanceiro() {
 window.onclick = function(event) {
   const modal = document.getElementById("modal")
   const modalCriar = document.getElementById("modalCriar")
+  const modalEditar = document.getElementById("modalEditar")
 
-  if (event.target === modal) {
-    fecharModal()
-  }
-
-  if (event.target === modalCriar) {
-    fecharModalCriar()
-  }
+  if (event.target === modal) fecharModal()
+  if (event.target === modalCriar) fecharModalCriar()
+  if (event.target === modalEditar) fecharModalEditar()
 }
 
 carregarDados()

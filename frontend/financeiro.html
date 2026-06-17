@@ -77,6 +77,41 @@
   </div>
 </div>
 
+<div id="modalEditar" class="financeiro-modal">
+  <div class="financeiro-modal-content">
+    <span onclick="fecharModalEditar()" class="financeiro-close">&times;</span>
+
+    <h3>Editar Documento</h3>
+
+    <input type="hidden" id="editId">
+
+    <input id="editNome" placeholder="Nome do documento">
+    <input id="editEmbalagem" placeholder="Armazenamento / Embalagem">
+
+    <select id="editDepartamento">
+      <option value="AGERP">AGERP</option>
+      <option value="ITERMA">ITERMA</option>
+      <option value="SAFE">SAFE</option>
+      <option value="SEDES">SEDES</option>
+      <option value="SEGOV">SEGOV</option>
+    </select>
+
+    <select id="editModulo">
+      <option value="notas">Notas</option>
+      <option value="diarias">Diárias</option>
+      <option value="admissoes">Admissão/Demissão</option>
+    </select>
+
+    <select id="editTipo">
+      <option value="ativo">Ativo</option>
+      <option value="inativo">Inativo</option>
+      <option value="regional">Regional</option>
+    </select>
+
+    <button onclick="salvarEdicao()">Salvar edição</button>
+  </div>
+</div>
+
 <script src="js/financeiro.js"></script>
 
 </body>

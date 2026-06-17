@@ -14,6 +14,11 @@ client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 
 
+def agora_fortaleza():
+    tz = pytz.timezone("America/Fortaleza")
+    return datetime.now(tz)
+
+
 @doc_routes.route("/upload", methods=["POST"])
 def upload():
     file = request.files.get("file")
@@ -26,8 +31,7 @@ def upload():
     if not filename:
         return jsonify({"error": "Apenas PDF permitido"}), 400
 
-    tz = pytz.timezone("America/Fortaleza")
-    now = datetime.now(tz)
+    now = agora_fortaleza()
 
     doc = {
         "nome": request.form.get("nome"),
@@ -40,6 +44,10 @@ def upload():
 
         "origem": "gerenciador",
         "protegido_exclusao": False,
+
+        "confirmado_financeiro": False,
+        "confirmado_por": None,
+        "data_confirmacao": None,
 
         "data_envio": now,
         "dia": now.day,
@@ -54,10 +62,10 @@ def upload():
         "upload_documento",
         request.form.get("usuario"),
         {
-            "nome": request.form.get("nome"),
-            "modulo": request.form.get("modulo"),
-            "departamento": request.form.get("departamento"),
-            "tipo": request.form.get("tipo"),
+            "nome": doc["nome"],
+            "modulo": doc["modulo"],
+            "departamento": doc["departamento"],
+            "tipo": doc["tipo"],
             "origem": "gerenciador"
         }
     )
@@ -77,8 +85,7 @@ def financeiro_upload():
     if not filename:
         return jsonify({"error": "Apenas PDF permitido"}), 400
 
-    tz = pytz.timezone("America/Fortaleza")
-    now = datetime.now(tz)
+    now = agora_fortaleza()
 
     doc = {
         "nome": request.form.get("nome"),
@@ -91,6 +98,10 @@ def financeiro_upload():
 
         "origem": "financeiro",
         "protegido_exclusao": True,
+
+        "confirmado_financeiro": True,
+        "confirmado_por": request.form.get("usuario"),
+        "data_confirmacao": now,
 
         "data_envio": now,
         "dia": now.day,
@@ -105,10 +116,10 @@ def financeiro_upload():
         "upload_financeiro",
         request.form.get("usuario"),
         {
-            "nome": request.form.get("nome"),
-            "modulo": request.form.get("modulo"),
-            "departamento": request.form.get("departamento"),
-            "tipo": request.form.get("tipo"),
+            "nome": doc["nome"],
+            "modulo": doc["modulo"],
+            "departamento": doc["departamento"],
+            "tipo": doc["tipo"],
             "origem": "financeiro"
         }
     )
@@ -137,9 +148,95 @@ def list_docs():
     return jsonify(docs), 200
 
 
+@doc_routes.route("/documents/<id>", methods=["PUT"])
+def editar_doc(id):
+    try:
+        doc_antigo = db.documents.find_one({"_id": ObjectId(id)})
+
+        if not doc_antigo:
+            return jsonify({"error": "Documento não encontrado"}), 404
+
+        data = request.json
+        usuario = data.get("usuario", "financeiro")
+
+        novos_dados = {
+            "nome": data.get("nome"),
+            "embalagem": data.get("embalagem"),
+            "tipo": data.get("tipo"),
+            "departamento": data.get("departamento"),
+            "modulo": data.get("modulo")
+        }
+
+        db.documents.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": novos_dados}
+        )
+
+        registrar_auditoria(
+            "editar_documento_financeiro",
+            usuario,
+            {
+                "documento_id": id,
+                "antes": {
+                    "nome": doc_antigo.get("nome"),
+                    "embalagem": doc_antigo.get("embalagem"),
+                    "tipo": doc_antigo.get("tipo"),
+                    "departamento": doc_antigo.get("departamento"),
+                    "modulo": doc_antigo.get("modulo")
+                },
+                "depois": novos_dados
+            }
+        )
+
+        return jsonify({"msg": "Documento editado com sucesso"}), 200
+
+    except Exception:
+        return jsonify({"error": "Erro ao editar documento"}), 400
+
+
+@doc_routes.route("/documents/<id>/confirmar", methods=["PATCH"])
+def confirmar_doc(id):
+    try:
+        data = request.json
+        usuario = data.get("usuario", "financeiro")
+        confirmado = data.get("confirmado", True)
+
+        now = agora_fortaleza()
+
+        campos = {
+            "confirmado_financeiro": confirmado,
+            "confirmado_por": usuario if confirmado else None,
+            "data_confirmacao": now if confirmado else None
+        }
+
+        result = db.documents.update_one(
+            {"_id": ObjectId(id)},
+            {"$set": campos}
+        )
+
+        if result.matched_count == 0:
+            return jsonify({"error": "Documento não encontrado"}), 404
+
+        registrar_auditoria(
+            "confirmar_documento_financeiro" if confirmado else "desconfirmar_documento_financeiro",
+            usuario,
+            {
+                "documento_id": id,
+                "confirmado": confirmado
+            }
+        )
+
+        return jsonify({"msg": "Status de confirmação atualizado"}), 200
+
+    except Exception:
+        return jsonify({"error": "Erro ao confirmar documento"}), 400
+
+
 @doc_routes.route("/documents/<id>", methods=["DELETE"])
 def delete_doc(id):
     try:
+        usuario = request.args.get("usuario", "desconhecido")
+
         doc = db.documents.find_one({"_id": ObjectId(id)})
 
         if not doc:
@@ -148,8 +245,8 @@ def delete_doc(id):
         db.documents.delete_one({"_id": ObjectId(id)})
 
         registrar_auditoria(
-            "delete_documento",
-            doc.get("anexado_por"),
+            "delete_documento_financeiro" if usuario else "delete_documento",
+            usuario,
             {
                 "nome": doc.get("nome"),
                 "modulo": doc.get("modulo"),
