@@ -9,7 +9,9 @@ from routes.solicitacoes import solicitacoes_routes
 from apscheduler.schedulers.background import BackgroundScheduler
 from utils.cleanup_utils import limpar_arquivos_antigos
 from routes.auditoria import auditoria_routes
+from config import MONGO_URI
 
+print(MONGO_URI)
 app = Flask(__name__)
 CORS(app)
 
