@@ -11,10 +11,6 @@ doc_routes = Blueprint("documents", __name__)
 
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
-print("DOCUMENTS.PY USANDO:")
-print("MONGO_URI =", MONGO_URI)
-print("DB_NAME =", DB_NAME)
-
 
 def agora_fortaleza():
     tz = pytz.timezone("America/Fortaleza")
