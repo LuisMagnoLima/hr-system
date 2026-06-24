@@ -76,8 +76,9 @@ async function carregarUsuariosPorPermissao() {
   select.innerHTML = `<option value="">Selecione um usuário</option>`
 
   try {
-    const res = await fetch(`http://localhost:5000/usuarios-por-permissao?modulo=${modulo}`)
-    const users = await res.json()
+    const users = await apiFetch(`/usuarios-por-permissao?modulo=${modulo}`)
+
+    if (!Array.isArray(users)) return
 
     users.forEach(user => {
       const option = document.createElement("option")
@@ -127,15 +128,13 @@ async function enviarSolicitacao() {
   formData.append("file", file)
 
   try {
-    const res = await fetch("http://localhost:5000/solicitacoes", {
+    const data = await apiFetch("/solicitacoes", {
       method: "POST",
       body: formData
     })
 
-    const data = await res.json()
-
-    if (!res.ok) {
-      alert(data.error || "Erro ao enviar solicitação")
+    if (data?.error) {
+      alert(data.error)
       return
     }
 

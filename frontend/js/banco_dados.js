@@ -67,8 +67,7 @@ function classeModulo(modulo) {
 
 async function carregarDados() {
   try {
-    const res = await fetch("http://localhost:5000/financeiro")
-    docsGlobal = await res.json()
+    docsGlobal = await apiFetch("/financeiro")
     paginaAtual = 1
     renderTabela()
   } catch (err) {

@@ -90,11 +90,7 @@ async function verificarNotificacoes() {
   if (!badge) return
 
   try {
-    const res = await fetch(
-      `http://localhost:5000/solicitacoes?destinatario=${payload.email}`
-    )
-
-    const dados = await res.json()
+    const dados = await apiFetch(`/solicitacoes?destinatario=${payload.email}`)
 
     if (Array.isArray(dados) && dados.length > 0) {
       badge.style.display = "inline-flex"

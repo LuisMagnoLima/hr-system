@@ -46,8 +46,8 @@ async function carregarAuditoria() {
   if (usuario) url += `usuario=${encodeURIComponent(usuario)}&`
   if (acao) url += `acao=${encodeURIComponent(acao)}&`
 
-  const res = await fetch(url)
-  const dados = await res.json()
+  const path = url.replace("http://localhost:5000", "")
+  const dados = await apiFetch(path)
 
   const filtrados = dados.filter(log => mesmaData(log, dataFiltro))
 

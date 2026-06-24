@@ -21,11 +21,7 @@ async function carregarNotificacoes() {
   lista.innerHTML = ""
 
   try {
-    const res = await fetch(
-      `http://localhost:5000/solicitacoes?destinatario=${payload.email}`
-    )
-
-    const dados = await res.json()
+    const dados = await apiFetch(`/solicitacoes?destinatario=${payload.email}`)
 
     if (!Array.isArray(dados) || dados.length === 0) {
       lista.innerHTML = "<p>Nenhuma notificação.</p>"
@@ -58,14 +54,12 @@ async function carregarNotificacoes() {
 
 async function processar(id) {
   try {
-    const res = await fetch(`http://localhost:5000/solicitacoes/${id}/processar`, {
+    const data = await apiFetch(`/solicitacoes/${id}/processar`, {
       method: "POST"
     })
 
-    const data = await res.json()
-
-    if (!res.ok) {
-      alert(data.error || "Erro ao processar solicitação")
+    if (data?.error) {
+      alert(data.error)
       return
     }
 

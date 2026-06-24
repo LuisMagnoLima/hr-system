@@ -3,7 +3,6 @@ from flask import Blueprint, request, jsonify, send_from_directory, current_app
 from pymongo import MongoClient
 from bson import ObjectId
 import pytz
-
 from config import MONGO_URI, DB_NAME
 from utils.file_utils import save_file
 from utils.audit_utils import registrar_auditoria

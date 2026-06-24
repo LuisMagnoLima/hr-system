@@ -22,23 +22,14 @@ function getTemaModulo() {
   const modulo = getModuloAtual()
 
   if (modulo === "diarias") {
-    return {
-      cor: "#28a745",
-      clara: "#e8f5ec"
-    }
+    return { cor: "#28a745", clara: "#e8f5ec" }
   }
 
   if (modulo === "admissoes") {
-    return {
-      cor: "#ff8c00",
-      clara: "#fff2e2"
-    }
+    return { cor: "#ff8c00", clara: "#fff2e2" }
   }
 
-  return {
-    cor: "#4f6df5",
-    clara: "#edf2ff"
-  }
+  return { cor: "#4f6df5", clara: "#edf2ff" }
 }
 
 function aplicarTemaModulo() {
@@ -62,9 +53,7 @@ function getDepartamentoAtual() {
 function atualizarTitulo() {
   const dep = getDepartamentoAtual()
   const titulo = document.getElementById("tituloDepartamento")
-  if (titulo) {
-    titulo.innerText = `Gerenciador - ${dep}`
-  }
+  if (titulo) titulo.innerText = `Gerenciador - ${dep}`
 }
 
 function atualizarStatusVisual() {
@@ -97,9 +86,7 @@ function abrirModal() {
 
 function fecharModal() {
   const modal = document.getElementById("modal")
-  if (modal) {
-    modal.style.display = "none"
-  }
+  if (modal) modal.style.display = "none"
 }
 
 function voltar() {
@@ -111,7 +98,6 @@ function aplicarCorBotao() {
   if (!btn) return
 
   const tema = getTemaModulo()
-
   btn.style.background = tema.cor
   btn.style.color = "#fff"
   btn.style.border = "none"
@@ -146,15 +132,13 @@ async function upload() {
   formData.append("departamento", departamento)
 
   try {
-    const res = await fetch("http://localhost:5000/upload", {
+    const data = await apiFetch("/upload", {
       method: "POST",
       body: formData
     })
 
-    const data = await res.json()
-
-    if (!res.ok) {
-      alert(data.error || "Erro ao enviar")
+    if (data?.error) {
+      alert(data.error)
       return
     }
 
@@ -173,9 +157,7 @@ function setFiltro(tipo, el) {
     btn.classList.remove("active")
   })
 
-  if (el) {
-    el.classList.add("active")
-  }
+  if (el) el.classList.add("active")
 
   atualizarStatusVisual()
   loadDocs()
@@ -189,11 +171,7 @@ async function loadDocs() {
   const buscaInput = document.getElementById("busca")
   const busca = buscaInput ? buscaInput.value.toLowerCase().trim() : ""
 
-  const res = await fetch(
-    `http://localhost:5000/documents?modulo=${modulo}&departamento=${departamento}`
-  )
-
-  const docs = await res.json()
+  const docs = await apiFetch(`/documents?modulo=${modulo}&departamento=${departamento}`)
 
   const lista = document.getElementById("lista")
   lista.innerHTML = ""
@@ -243,23 +221,25 @@ async function loadDocs() {
 }
 
 async function remover(id) {
-  await fetch(`http://localhost:5000/documents/${id}`, {
+  const data = await apiFetch(`/documents/${id}?usuario=${encodeURIComponent(getUser())}`, {
     method: "DELETE"
   })
+
+  if (data?.error) {
+    alert(data.error)
+    return
+  }
+
   loadDocs()
 }
 
 window.onclick = function(event) {
   const modal = document.getElementById("modal")
-  if (event.target === modal) {
-    fecharModal()
-  }
+  if (event.target === modal) fecharModal()
 }
 
 document.addEventListener("keydown", function(e) {
-  if (e.key === "Escape") {
-    fecharModal()
-  }
+  if (e.key === "Escape") fecharModal()
 })
 
 aplicarTemaModulo()

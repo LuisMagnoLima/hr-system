@@ -3,8 +3,7 @@ let docsGlobal = []
 let filtroDepartamento = ""
 
 async function carregarDados() {
-  const res = await fetch("http://localhost:5000/financeiro")
-  docsGlobal = await res.json()
+  docsGlobal = await apiFetch("/financeiro")
   renderCalendario()
 }
 
@@ -16,7 +15,6 @@ function setFiltroDepartamento() {
 function getUser() {
   const token = localStorage.getItem("token")
   if (!token) return "Desconhecido"
-
   const payload = JSON.parse(atob(token.split(".")[1]))
   return payload.email
 }
@@ -48,8 +46,7 @@ function renderCalendario() {
   const diasNoMes = new Date(ano, mes + 1, 0).getDate()
 
   for (let i = 0; i < primeiroDia; i++) {
-    const vazio = document.createElement("div")
-    calendario.appendChild(vazio)
+    calendario.appendChild(document.createElement("div"))
   }
 
   for (let dia = 1; dia <= diasNoMes; dia++) {
@@ -58,11 +55,7 @@ function renderCalendario() {
     div.innerHTML = `<b>${dia}</b>`
 
     const hoje = new Date()
-    if (
-      dia === hoje.getDate() &&
-      mes === hoje.getMonth() &&
-      ano === hoje.getFullYear()
-    ) {
+    if (dia === hoje.getDate() && mes === hoje.getMonth() && ano === hoje.getFullYear()) {
       div.style.border = "2px solid #4f6df5"
     }
 
@@ -74,10 +67,7 @@ function renderCalendario() {
     )
 
     eventos.slice(0, 3).forEach(doc => {
-      let cor = "financeiro-verde"
-      if (doc.modulo === "notas") cor = "financeiro-azul"
-      if (doc.modulo === "admissoes") cor = "financeiro-laranja"
-
+      const cor = getCorClasse(doc.modulo)
       const confirmado = doc.confirmado_financeiro ? "financeiro-confirmado-card" : ""
 
       const el = document.createElement("div")
@@ -98,7 +88,7 @@ function renderCalendario() {
       mais.className = "financeiro-mais"
       mais.type = "button"
       mais.innerText = `+${eventos.length - 3} mais`
-      mais.onclick = (e) => {
+      mais.onclick = e => {
         e.stopPropagation()
         abrirListaDia(eventos)
       }
@@ -219,7 +209,7 @@ function abrirListaDia(eventos) {
 }
 
 async function confirmarDocumento(id, confirmado) {
-  const res = await fetch(`http://localhost:5000/documents/${id}/confirmar`, {
+  const data = await apiFetch(`/documents/${id}/confirmar`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -228,10 +218,8 @@ async function confirmarDocumento(id, confirmado) {
     })
   })
 
-  const data = await res.json()
-
-  if (!res.ok) {
-    alert(data.error || "Erro ao confirmar documento")
+  if (data?.error) {
+    alert(data.error)
     return
   }
 
@@ -270,16 +258,14 @@ async function salvarEdicao() {
     return
   }
 
-  const res = await fetch(`http://localhost:5000/documents/${id}`, {
+  const data = await apiFetch(`/documents/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(dados)
   })
 
-  const data = await res.json()
-
-  if (!res.ok) {
-    alert(data.error || "Erro ao editar")
+  if (data?.error) {
+    alert(data.error)
     return
   }
 
@@ -292,14 +278,12 @@ async function salvarEdicao() {
 async function excluirDocumento(id) {
   if (!confirm("Tem certeza que deseja excluir este documento?")) return
 
-  const res = await fetch(`http://localhost:5000/documents/${id}?usuario=${encodeURIComponent(getUser())}`, {
+  const data = await apiFetch(`/documents/${id}?usuario=${encodeURIComponent(getUser())}`, {
     method: "DELETE"
   })
 
-  const data = await res.json()
-
-  if (!res.ok) {
-    alert(data.error || "Erro ao excluir")
+  if (data?.error) {
+    alert(data.error)
     return
   }
 
@@ -347,15 +331,13 @@ async function uploadFinanceiro() {
   formData.append("tipo", tipo)
   formData.append("usuario", getUser())
 
-  const res = await fetch("http://localhost:5000/financeiro/upload", {
+  const data = await apiFetch("/financeiro/upload", {
     method: "POST",
     body: formData
   })
 
-  const data = await res.json()
-
-  if (!res.ok) {
-    alert(data.error || "Erro ao adicionar")
+  if (data?.error) {
+    alert(data.error)
     return
   }
 
