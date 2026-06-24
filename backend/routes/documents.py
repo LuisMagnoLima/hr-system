@@ -40,7 +40,7 @@ def upload():
         "nome": request.form.get("nome"),
         "embalagem": request.form.get("embalagem"),
         "arquivo": filename,
-        "anexado_por": request.form.get("usuario"),
+        "anexado_por": request.current_user["email"],
         "tipo": request.form.get("tipo"),
         "departamento": request.form.get("departamento"),
         "modulo": request.form.get("modulo"),
@@ -63,7 +63,7 @@ def upload():
 
     registrar_auditoria(
         "upload_documento",
-        request.form.get("usuario"),
+        request.current_user["email"],
         {
             "nome": doc["nome"],
             "modulo": doc["modulo"],
@@ -95,7 +95,7 @@ def financeiro_upload():
         "nome": request.form.get("nome"),
         "embalagem": request.form.get("embalagem"),
         "arquivo": filename,
-        "anexado_por": request.form.get("usuario"),
+        "anexado_por": request.current_user["email"],
         "tipo": request.form.get("tipo"),
         "departamento": request.form.get("departamento"),
         "modulo": request.form.get("modulo"),
@@ -104,7 +104,7 @@ def financeiro_upload():
         "protegido_exclusao": True,
 
         "confirmado_financeiro": True,
-        "confirmado_por": request.form.get("usuario"),
+        "confirmado_por": request.current_user["email"],
         "data_confirmacao": now,
 
         "data_envio": now,
@@ -118,7 +118,7 @@ def financeiro_upload():
 
     registrar_auditoria(
         "upload_financeiro",
-        request.form.get("usuario"),
+        request.current_user["email"],
         {
             "nome": doc["nome"],
             "modulo": doc["modulo"],
@@ -132,6 +132,7 @@ def financeiro_upload():
 
 
 @doc_routes.route("/documents", methods=["GET"])
+@login_required
 def list_docs():
     modulo = request.args.get("modulo")
     departamento = request.args.get("departamento")
@@ -162,7 +163,7 @@ def editar_doc(id):
             return jsonify({"error": "Documento não encontrado"}), 404
 
         data = request.json
-        usuario = data.get("usuario", "financeiro")
+        usuario = request.current_user["email"]
 
         novos_dados = {
             "nome": data.get("nome"),
@@ -204,7 +205,7 @@ def editar_doc(id):
 def confirmar_doc(id):
     try:
         data = request.json
-        usuario = data.get("usuario", "financeiro")
+        usuario = request.current_user["email"]
         confirmado = data.get("confirmado", True)
 
         now = agora_fortaleza()
@@ -242,7 +243,7 @@ def confirmar_doc(id):
 @permission_required("financeiro")
 def delete_doc(id):
     try:
-        usuario = request.args.get("usuario", "desconhecido")
+        usuario = request.current_user["email"]
 
         doc = db.documents.find_one({"_id": ObjectId(id)})
 

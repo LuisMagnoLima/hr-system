@@ -48,7 +48,7 @@ def criar_solicitacao():
     if not filename:
         return jsonify({"error": "Apenas PDF permitido"}), 400
 
-    remetente = request.form.get("remetente")
+    remetente = request.current_user["email"]
     destinatario = request.form.get("destinatario")
     nome = request.form.get("nome")
     embalagem = request.form.get("embalagem")
@@ -130,7 +130,7 @@ def processar_solicitacao(id):
         "nome": solicitacao.get("nome"),
         "embalagem": solicitacao.get("embalagem"),
         "arquivo": solicitacao.get("arquivo"),
-        "anexado_por": solicitacao.get("destinatario"),
+        "anexado_por": request.current_user["email"],
         "tipo": solicitacao.get("tipo"),
         "departamento": solicitacao.get("departamento"),
         "modulo": solicitacao.get("modulo"),
@@ -144,7 +144,7 @@ def processar_solicitacao(id):
     db.documents.insert_one(doc)
     registrar_auditoria(
     "processar_solicitacao",
-    solicitacao.get("destinatario"),
+    request.current_user["email"],
     {
         "remetente": solicitacao.get("remetente"),
         "nome": solicitacao.get("nome"),

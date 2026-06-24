@@ -8,6 +8,7 @@ client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 
 @auditoria_routes.route("/auditoria", methods=["GET"])
+@role_required("admin")
 def listar_auditoria():
     usuario = request.args.get("usuario")
     acao = request.args.get("acao")
