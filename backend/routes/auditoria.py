@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from pymongo import MongoClient
 from config import MONGO_URI, DB_NAME
-
+from utils.permission_utils import role_required
 auditoria_routes = Blueprint("auditoria", __name__)
 
 client = MongoClient(MONGO_URI)

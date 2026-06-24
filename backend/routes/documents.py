@@ -7,11 +7,14 @@ import pytz
 from config import MONGO_URI, DB_NAME
 from utils.file_utils import save_file
 from utils.audit_utils import registrar_auditoria
-
+from utils.permission_utils import login_required, role_required, permission_required
 doc_routes = Blueprint("documents", __name__)
 
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
+print("DOCUMENTS.PY USANDO:")
+print("MONGO_URI =", MONGO_URI)
+print("DB_NAME =", DB_NAME)
 
 
 def agora_fortaleza():
@@ -20,6 +23,7 @@ def agora_fortaleza():
 
 
 @doc_routes.route("/upload", methods=["POST"])
+@login_required
 def upload():
     file = request.files.get("file")
 
@@ -74,6 +78,7 @@ def upload():
 
 
 @doc_routes.route("/financeiro/upload", methods=["POST"])
+@permission_required("financeiro")
 def financeiro_upload():
     file = request.files.get("file")
 
@@ -149,6 +154,7 @@ def list_docs():
 
 
 @doc_routes.route("/documents/<id>", methods=["PUT"])
+@permission_required("financeiro")
 def editar_doc(id):
     try:
         doc_antigo = db.documents.find_one({"_id": ObjectId(id)})
@@ -195,6 +201,7 @@ def editar_doc(id):
 
 
 @doc_routes.route("/documents/<id>/confirmar", methods=["PATCH"])
+@permission_required("financeiro")
 def confirmar_doc(id):
     try:
         data = request.json
@@ -233,6 +240,7 @@ def confirmar_doc(id):
 
 
 @doc_routes.route("/documents/<id>", methods=["DELETE"])
+@permission_required("financeiro")
 def delete_doc(id):
     try:
         usuario = request.args.get("usuario", "desconhecido")
@@ -273,6 +281,7 @@ def get_file(filename):
 
 
 @doc_routes.route("/financeiro", methods=["GET"])
+@permission_required("financeiro", "banco_dados")
 def financeiro():
     docs = list(db.documents.find())
 

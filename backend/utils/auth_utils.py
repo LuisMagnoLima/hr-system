@@ -12,10 +12,11 @@ def check_password(password, hashed):
 def generate_token(user):
     payload = {
         "email": user["email"],
-        "permissions": user["permissions"],
+        "permissions": user.get("permissions", []),
         "role": user.get("role", "operador"),
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=10)
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=8)
     }
+
     return jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
 def verify_token(token):

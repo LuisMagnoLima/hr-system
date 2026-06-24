@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify, current_app
 from pymongo import MongoClient
 from bson import ObjectId
 import pytz
-
+from utils.permission_utils import login_required
 from config import MONGO_URI, DB_NAME
 from utils.file_utils import save_file
 from utils.audit_utils import registrar_auditoria
@@ -16,6 +16,7 @@ db = client[DB_NAME]
 
 # 🔎 lista usuários que podem receber aquele módulo
 @solicitacoes_routes.route("/usuarios-por-permissao", methods=["GET"])
+@login_required
 def usuarios_por_permissao():
     modulo = request.args.get("modulo")
 
@@ -35,6 +36,7 @@ def usuarios_por_permissao():
 
 # 📤 cria solicitação enviada pela Polyana
 @solicitacoes_routes.route("/solicitacoes", methods=["POST"])
+@login_required
 def criar_solicitacao():
     file = request.files.get("file")
 
@@ -94,6 +96,7 @@ def criar_solicitacao():
 
 # 🔔 lista solicitações pendentes do usuário
 @solicitacoes_routes.route("/solicitacoes", methods=["GET"])
+@login_required
 def listar_solicitacoes():
     destinatario = request.args.get("destinatario")
 
@@ -113,6 +116,7 @@ def listar_solicitacoes():
 
 # ✅ processa solicitação e joga em documents
 @solicitacoes_routes.route("/solicitacoes/<id>/processar", methods=["POST"])
+@login_required
 def processar_solicitacao(id):
     solicitacao = db.solicitacoes.find_one({"_id": ObjectId(id)})
 
