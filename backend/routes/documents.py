@@ -268,6 +268,7 @@ def delete_doc(id):
 
 
 @doc_routes.route("/files/<filename>", methods=["GET"])
+@login_required
 def get_file(filename):
     return send_from_directory(
         current_app.config["UPLOAD_FOLDER"],
