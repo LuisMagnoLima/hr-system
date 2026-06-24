@@ -1,3 +1,27 @@
+function bloquearNaoSolicitante() {
+  const token = localStorage.getItem("token")
+
+  if (!token) {
+    window.location.href = "login.html"
+    return
+  }
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]))
+
+    if (payload.role !== "solicitante") {
+      alert("Você não tem acesso à tela de solicitação")
+      window.location.href = "menu.html"
+      return
+    }
+  } catch {
+    localStorage.clear()
+    window.location.href = "login.html"
+  }
+}
+
+bloquearNaoSolicitante()
+
 let tipoAtual = "ativo"
 
 function getPayload() {

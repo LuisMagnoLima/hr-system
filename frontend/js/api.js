@@ -13,15 +13,16 @@ async function apiFetch(url, options = {}) {
   const res = await fetch(API_URL + url, options)
 
   if (res.status === 401) {
-    alert("Sessão expirada")
+    alert("Sessão expirada ou usuário inválido")
     localStorage.clear()
     window.location.href = "login.html"
-    return
+    return null
   }
 
   if (res.status === 403) {
     alert("Você não tem permissão para acessar essa função")
-    return
+    window.history.back()
+    return null
   }
 
   return res.json()
