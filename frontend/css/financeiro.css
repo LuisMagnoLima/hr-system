@@ -530,3 +530,92 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 }
+
+.financeiro-top-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.btn-voltar-login {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.financeiro-resumo {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(160px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.resumo-card {
+  background: white;
+  border: 1px solid #e1e5ef;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+
+.resumo-card span {
+  display: block;
+  color: #6c7280;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.resumo-card strong {
+  font-size: 24px;
+  color: #1f2a44;
+}
+
+.financeiro-busca {
+  margin-bottom: 18px;
+}
+
+.financeiro-busca input {
+  width: 100%;
+  padding: 13px 15px;
+  border: 1px solid #d9dce5;
+  border-radius: 12px;
+  outline: none;
+  font-size: 15px;
+}
+
+.resumo-card {
+    transition: all .25s ease;
+    border-left: 5px solid transparent;
+}
+
+.resumo-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0,0,0,.12);
+}
+
+.resumo-card small{
+    display:block;
+    margin-top:8px;
+    color:#7b8191;
+    font-size:12px;
+}
+
+.resumo-geral{
+    border-left-color:#4f6df5;
+}
+
+.resumo-mes{
+    border-left-color:#00a86b;
+}
+
+.resumo-pendente{
+    border-left-color:#ff9800;
+}
+
+.resumo-confirmado{
+    border-left-color:#28a745;
+}

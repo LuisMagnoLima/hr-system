@@ -49,6 +49,46 @@ function renderCalendario() {
     calendario.appendChild(document.createElement("div"))
   }
 
+const busca = (document.getElementById("buscaFinanceiro")?.value || "")
+  .toLowerCase()
+  .trim()
+
+// 🌎 Total Geral
+const docsGerais = docsGlobal.filter(d => {
+  const texto =
+    `${d.nome || ""} ${d.departamento || ""} ${d.anexado_por || ""}`
+      .toLowerCase()
+
+  const bateDepartamento =
+    !filtroDepartamento || d.departamento === filtroDepartamento
+
+  return bateDepartamento && texto.includes(busca)
+})
+
+// 📅 Apenas mês atual
+const docsDoMes = docsGerais.filter(d =>
+  Number(d.mes) === mes + 1 &&
+  Number(d.ano) === ano
+)
+
+document.getElementById("resumoPeriodo").innerText =
+  `${meses[mes]} / ${ano}`
+
+document.getElementById("resumoTotalGeral").innerText =
+  docsGerais.length
+
+document.getElementById("resumoTotalMes").innerText =
+  docsDoMes.length
+
+document.getElementById("resumoPendentes").innerText =
+  docsDoMes.filter(d => !d.confirmado_financeiro).length
+
+document.getElementById("resumoConfirmados").innerText =
+  docsDoMes.filter(d => d.confirmado_financeiro).length
+
+// Continue usando docsDoMes para desenhar os eventos do calendário
+const docsFiltrados = docsDoMes
+
   for (let dia = 1; dia <= diasNoMes; dia++) {
     const div = document.createElement("div")
     div.className = "financeiro-dia"
@@ -59,12 +99,11 @@ function renderCalendario() {
       div.style.border = "2px solid #4f6df5"
     }
 
-    const eventos = docsGlobal.filter(d =>
-      d.dia == dia &&
-      d.mes == mes + 1 &&
-      d.ano == ano &&
-      (!filtroDepartamento || d.departamento === filtroDepartamento)
-    )
+   const eventos = docsFiltrados.filter(d =>
+    d.dia == dia &&
+    d.mes == mes + 1 &&
+    d.ano == ano
+  )
 
     eventos.slice(0, 3).forEach(doc => {
       const cor = getCorClasse(doc.modulo)
@@ -97,6 +136,11 @@ function renderCalendario() {
 
     calendario.appendChild(div)
   }
+}
+
+function voltarLogin() {
+  localStorage.clear()
+  window.location.href = "login.html"
 }
 
 function proximoMes() {

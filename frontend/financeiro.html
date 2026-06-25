@@ -4,12 +4,17 @@
   <meta charset="UTF-8">
   <title>Financeiro</title>
   <link rel="stylesheet" href="css/financeiro.css">
+
 </head>
 
 <body>
 
 <div class="financeiro-page">
 
+  <div class="financeiro-top-actions">
+    <button class="btn-voltar-login" onclick="voltarLogin()">← Voltar para Login</button>
+  </div>
+  
   <h1 class="financeiro-titulo">📅 Calendário Financeiro</h1>
 
   <div class="financeiro-filtros">
@@ -25,6 +30,43 @@
     <button onclick="abrirModalCriar()">+ Criar</button>
   </div>
 
+  <div class="financeiro-resumo">
+
+    <div class="resumo-card resumo-geral">
+        <span>🌎 Total Geral</span>
+        <strong id="resumoTotalGeral">0</strong>
+        <small>Todos os documentos</small>
+    </div>
+
+    <div class="resumo-card resumo-mes">
+        <span>📅 Total do Mês</span>
+        <strong id="resumoTotalMes">0</strong>
+        <small id="resumoPeriodo">Mês Atual</small>
+    </div>
+
+    <div class="resumo-card resumo-pendente">
+        <span>⏳ Pendentes do Mês</span>
+        <strong id="resumoPendentes">0</strong>
+        <small>Aguardando confirmação</small>
+    </div>
+
+    <div class="resumo-card resumo-confirmado">
+        <span>✅ Confirmados do Mês</span>
+        <strong id="resumoConfirmados">0</strong>
+        <small>Financeiro</small>
+    </div>
+
+</div>
+
+<div class="financeiro-busca">
+  <input
+    type="text"
+    id="buscaFinanceiro"
+    placeholder="Buscar por nome, secretaria ou usuário..."
+    oninput="renderCalendario()"
+  >
+</div>
+
   <div class="financeiro-header">
     <button onclick="mesAnterior()">◀</button>
     <h2 id="mesAno"></h2>
@@ -34,6 +76,8 @@
   <div id="calendario"></div>
 
 </div>
+
+
 
 <div id="modal" class="financeiro-modal">
   <div class="financeiro-modal-content">
