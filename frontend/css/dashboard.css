@@ -179,3 +179,171 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+
+.users-box {
+  background: white;
+  padding: 24px;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  margin-top: 22px;
+}
+
+.users-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.users-header h2 {
+  margin: 0;
+}
+
+.users-header p {
+  margin: 6px 0 0;
+  color: #6b7280;
+}
+
+.users-header button {
+  background: #4f6df5;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.users-table-wrap {
+  overflow-x: auto;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.users-table th,
+.users-table td {
+  padding: 13px;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  font-size: 14px;
+}
+
+.users-table th {
+  color: #6b7280;
+  background: #f9fafb;
+}
+
+.role-badge {
+  background: #eef2ff;
+  color: #4f6df5;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.btn-edit-user,
+.btn-pass-user,
+.btn-del-user {
+  border: none;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.btn-edit-user {
+  background: #ffc107;
+  color: #1f2a44;
+}
+
+.btn-pass-user {
+  background: #4f6df5;
+  color: white;
+}
+
+.btn-del-user {
+  background: #dc3545;
+  color: white;
+}
+
+.user-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.55);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-modal-content {
+  background: white;
+  width: 480px;
+  max-width: calc(100% - 28px);
+  padding: 24px;
+  border-radius: 18px;
+  box-shadow: 0 16px 42px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+.user-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  font-size: 24px;
+  cursor: pointer;
+  font-weight: bold;
+  color: #6b7280;
+}
+
+.user-modal-content h3 {
+  margin-top: 0;
+}
+
+.user-modal-content label {
+  display: block;
+  margin: 12px 0 6px;
+  font-weight: bold;
+}
+
+.user-modal-content input,
+.user-modal-content select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d9dce5;
+  border-radius: 10px;
+  outline: none;
+}
+
+.permissoes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 10px 0 18px;
+}
+
+.permissoes-grid label {
+  background: #f4f6fb;
+  padding: 9px;
+  border-radius: 9px;
+  margin: 0;
+  font-weight: normal;
+}
+
+.user-modal-content button {
+  width: 100%;
+  background: #4f6df5;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}

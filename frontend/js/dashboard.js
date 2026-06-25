@@ -156,4 +156,162 @@ function renderUltimasAcoes(acoes) {
   })
 }
 
+let usuariosGlobal = []
+
+async function carregarUsuarios() {
+  const users = await apiFetch("/admin/users")
+  if (!users) return
+
+  usuariosGlobal = users
+
+  const tbody = document.getElementById("usuariosTabela")
+  tbody.innerHTML = ""
+
+  users.forEach(user => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${user.email}</td>
+        <td><span class="role-badge">${user.role || "operador"}</span></td>
+        <td>${(user.permissions || []).join(", ") || "-"}</td>
+        <td>
+          <button class="btn-edit-user" onclick="editarUsuario('${user._id}')">Editar</button>
+          <button class="btn-pass-user" onclick="alterarSenha('${user._id}')">Senha</button>
+          <button class="btn-del-user" onclick="excluirUsuario('${user._id}')">Excluir</button>
+        </td>
+      </tr>
+    `
+  })
+}
+
+function abrirModalUsuario() {
+  document.getElementById("modalUsuarioTitulo").innerText = "Novo Usuário"
+  document.getElementById("userId").value = ""
+  document.getElementById("userEmailInput").value = ""
+  document.getElementById("userSenhaInput").value = ""
+  document.getElementById("userSenhaInput").disabled = false
+  document.getElementById("userRoleInput").value = "operador"
+
+  document.querySelectorAll(".permissoes-grid input").forEach(input => {
+    input.checked = false
+  })
+
+  document.getElementById("modalUsuario").style.display = "flex"
+}
+
+function fecharModalUsuario() {
+  document.getElementById("modalUsuario").style.display = "none"
+}
+
+function editarUsuario(id) {
+  const user = usuariosGlobal.find(u => u._id === id)
+  if (!user) return
+
+  document.getElementById("modalUsuarioTitulo").innerText = "Editar Usuário"
+  document.getElementById("userId").value = user._id
+  document.getElementById("userEmailInput").value = user.email
+  document.getElementById("userSenhaInput").value = ""
+  document.getElementById("userSenhaInput").disabled = true
+  document.getElementById("userRoleInput").value = user.role || "operador"
+
+  const permissoes = user.permissions || []
+
+  document.querySelectorAll(".permissoes-grid input").forEach(input => {
+    input.checked = permissoes.includes(input.value)
+  })
+
+  document.getElementById("modalUsuario").style.display = "flex"
+}
+
+function getPermissoesSelecionadas() {
+  return Array.from(document.querySelectorAll(".permissoes-grid input:checked"))
+    .map(input => input.value)
+}
+
+async function salvarUsuario() {
+  const id = document.getElementById("userId").value
+
+  const dados = {
+    email: document.getElementById("userEmailInput").value.trim(),
+    password: document.getElementById("userSenhaInput").value,
+    role: document.getElementById("userRoleInput").value,
+    permissions: getPermissoesSelecionadas()
+  }
+
+  if (!dados.email) {
+    alert("Informe o email")
+    return
+  }
+
+  let result
+
+  if (id) {
+    delete dados.password
+
+    result = await apiFetch(`/admin/users/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dados)
+    })
+  } else {
+    if (!dados.password) {
+      alert("Informe a senha")
+      return
+    }
+
+    result = await apiFetch("/admin/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dados)
+    })
+  }
+
+  if (result?.error) {
+    alert(result.error)
+    return
+  }
+
+  alert(result.msg || "Usuário salvo com sucesso")
+  fecharModalUsuario()
+  carregarUsuarios()
+  carregarDashboard()
+}
+
+async function alterarSenha(id) {
+  const novaSenha = prompt("Digite a nova senha:")
+
+  if (!novaSenha) return
+
+  const result = await apiFetch(`/admin/users/${id}/password`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ password: novaSenha })
+  })
+
+  if (result?.error) {
+    alert(result.error)
+    return
+  }
+
+  alert("Senha alterada com sucesso")
+}
+
+async function excluirUsuario(id) {
+  if (!confirm("Tem certeza que deseja excluir este usuário?")) return
+
+  const result = await apiFetch(`/admin/users/${id}`, {
+    method: "DELETE"
+  })
+
+  if (result?.error) {
+    alert(result.error)
+    return
+  }
+
+  alert("Usuário excluído com sucesso")
+  carregarUsuarios()
+  carregarDashboard()
+}
+
+carregarUsuarios()
+
 carregarDashboard()

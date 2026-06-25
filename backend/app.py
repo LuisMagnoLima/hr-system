@@ -11,6 +11,7 @@ from utils.cleanup_utils import limpar_arquivos_antigos
 from routes.auditoria import auditoria_routes
 from config import MONGO_URI
 from routes.dashboard import dashboard_routes
+from routes.users import users_routes
 app = Flask(__name__)
 CORS(app)
 
@@ -22,6 +23,7 @@ app.register_blueprint(doc_routes)
 app.register_blueprint(solicitacoes_routes)
 app.register_blueprint(auditoria_routes)
 app.register_blueprint(dashboard_routes)
+app.register_blueprint(users_routes)
 @app.route("/files/<filename>")
 def get_file(filename):
     return send_from_directory(app.config["UPLOAD_FOLDER"], filename, as_attachment=True)
