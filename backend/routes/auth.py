@@ -28,7 +28,11 @@ def login():
     registrar_auditoria(
     "login_falhou",
     data.get("email"),
-    {}
-    )
+    {
+        "motivo": "Credenciais inválidas",
+        "email_tentado": data.get("email")
+    },
+    status="falha"
+)
 
     return jsonify({"error": "Credenciais inválidas"}), 401

@@ -25,10 +25,10 @@ def listar_auditoria():
         db.auditoria
         .find(filtro)
         .sort("data_hora", -1)
-        .limit(200)
+        .limit(300)
     )
 
     for log in logs:
         log["_id"] = str(log["_id"])
 
-    return jsonify(logs), 200
+    return jsonify(logs), 300
