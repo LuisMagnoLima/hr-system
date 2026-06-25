@@ -177,14 +177,21 @@ function abrirListaDia(eventos) {
     return horaA.localeCompare(horaB)
   })
 
-  let html = `<h3 class="financeiro-modal-titulo">Arquivos do dia</h3>`
+  let html = `
+    <h3 class="financeiro-modal-titulo">Arquivos do dia</h3>
+    <p class="financeiro-modal-subtitulo">
+      Clique em um documento para abrir os detalhes e confirmar.
+    </p>
+  `
 
   ordenados.forEach(doc => {
     const corClasse = getCorClasse(doc.modulo)
     const icone = getIcone(doc.modulo)
 
     html += `
-      <div class="financeiro-card-lista">
+      <div class="financeiro-card-lista financeiro-card-click"
+           onclick='abrirModal(${JSON.stringify(doc)})'>
+
         <div class="financeiro-card-titulo ${corClasse}">
           <span class="financeiro-card-icone">${icone}</span>
           <span>${doc.nome}</span>
@@ -193,12 +200,11 @@ function abrirListaDia(eventos) {
         <div class="financeiro-card-info">
           <p><b>Secretaria:</b> ${doc.departamento}</p>
           <p><b>Tipo:</b> ${doc.tipo}</p>
-          <p><b>Confirmado:</b> ${doc.confirmado_financeiro ? "Sim" : "Não"}</p>
+          <p><b>Confirmado:</b> ${doc.confirmado_financeiro ? "✅ Sim" : "⬜ Não"}</p>
 
-          <div class="financeiro-acoes">
-            <button class="btn-editar" onclick='abrirModalEditar(${JSON.stringify(doc)})'>✏️ Editar</button>
-            <button class="btn-excluir" onclick="excluirDocumento('${doc._id}')">🗑 Excluir</button>
-          </div>
+          <span class="financeiro-abrir-detalhes">
+            Abrir detalhes →
+          </span>
         </div>
       </div>
     `
@@ -207,6 +213,7 @@ function abrirListaDia(eventos) {
   body.innerHTML = html
   modal.style.display = "block"
 }
+
 
 async function confirmarDocumento(id, confirmado) {
   const data = await apiFetch(`/documents/${id}/confirmar`, {
