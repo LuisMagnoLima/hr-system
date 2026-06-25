@@ -282,3 +282,17 @@ body {
     justify-content: center;
   }
 }
+
+.bd-btn-dashboard {
+  background: #7c3aed;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.bd-btn-dashboard:hover {
+  opacity: 0.9;
+}
