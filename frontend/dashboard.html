@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Admin</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+<div class="dash-page">
+
+  <aside class="dash-sidebar">
+    <h2>HR System</h2>
+    <p>Dashboard Admin</p>
+
+    <button onclick="irBanco()">📁 Banco de Dados</button>
+    <button onclick="irAuditoria()">📜 Auditoria</button>
+    <button onclick="irFinanceiro()">💰 Financeiro</button>
+    <button class="logout" onclick="logout()">🚪 Sair</button>
+  </aside>
+
+  <main class="dash-main">
+    <div class="dash-header">
+      <div>
+        <h1>📊 Dashboard do Arthur</h1>
+        <p>Visão geral do sistema de documentos</p>
+      </div>
+    </div>
+
+    <section class="dash-cards">
+      <div class="dash-card azul">
+        <span>Total Geral</span>
+        <strong id="totalDocumentos">0</strong>
+        <small>Documentos cadastrados</small>
+      </div>
+
+      <div class="dash-card verde">
+        <span>Este Mês</span>
+        <strong id="documentosMes">0</strong>
+        <small>Documentos no mês atual</small>
+      </div>
+
+      <div class="dash-card amarelo">
+        <span>Pendentes</span>
+        <strong id="pendentes">0</strong>
+        <small>Aguardando confirmação</small>
+      </div>
+
+      <div class="dash-card roxo">
+        <span>Confirmados</span>
+        <strong id="confirmados">0</strong>
+        <small>Confirmados pelo financeiro</small>
+      </div>
+
+      <div class="dash-card escuro">
+        <span>Usuários</span>
+        <strong id="usuarios">0</strong>
+        <small>Usuários cadastrados</small>
+      </div>
+    </section>
+
+    <section class="dash-grid">
+      <div class="chart-box">
+        <h3>🏢 Documentos por Secretaria</h3>
+        <canvas id="chartSecretarias"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <h3>📝 Documentos por Módulo</h3>
+        <canvas id="chartModulos"></canvas>
+      </div>
+    </section>
+
+    <section class="dash-grid">
+      <div class="chart-box full">
+        <h3>📈 Evolução Mensal</h3>
+        <canvas id="chartMeses"></canvas>
+      </div>
+
+      <div class="chart-box">
+        <h3>🕒 Últimas ações</h3>
+        <div id="ultimasAcoes" class="acoes-lista"></div>
+      </div>
+    </section>
+  </main>
+
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/dashboard.js"></script>
+
+</body>
+</html>

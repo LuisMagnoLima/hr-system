@@ -105,6 +105,8 @@ async function verificarNotificacoes() {
   }
 }
 
+
+
 renderMenu()
 verificarNotificacoes()
 // Verifica notificações a cada 5 segundos
