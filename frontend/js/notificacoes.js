@@ -38,9 +38,9 @@ async function carregarNotificacoes() {
           <p><b>Tipo:</b> ${s.tipo}</p>
           <p><b>Armazenamento:</b> ${s.embalagem || "Sem embalagem"}</p>
           <p>
-            <a href="http://localhost:5000/files/${s.arquivo}" target="_blank">
+            <button onclick="baixarArquivo('${s.arquivo}')">
               Ver PDF
-            </a>
+            </button>
           </p>
           <button onclick="processar('${s._id}')">Adicionar ao sistema</button>
         </div>

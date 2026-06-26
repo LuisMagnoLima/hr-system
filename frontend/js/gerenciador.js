@@ -210,9 +210,11 @@ async function loadDocs() {
         <p>📂 ${doc.departamento}</p>
 
         <div class="ger-card-actions">
-          <a href="http://localhost:5000/files/${doc.arquivo}" target="_blank" class="ger-download-btn">
-            📥 Baixar
-          </a>
+          <button
+            class="ger-download-btn"
+            onclick="baixarArquivo('${doc.arquivo}')">
+             📥 Baixar
+          </button>
           <button class="ger-delete-btn" onclick="remover('${doc._id}')">🗑</button>
         </div>
       </div>
@@ -220,6 +222,34 @@ async function loadDocs() {
   })
 }
 
+
+async function baixarArquivo(filename) {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch(`${API_URL}/files/${filename}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const erro = await response.json().catch(() => ({}));
+    alert(erro.error || "Erro ao baixar o arquivo.");
+    return;
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  URL.revokeObjectURL(url);
+}
 async function remover(id) {
   const data = await apiFetch(`/documents/${id}?usuario=${encodeURIComponent(getUser())}`, {
     method: "DELETE"

@@ -347,3 +347,76 @@ body {
   font-weight: bold;
   cursor: pointer;
 }
+
+.users-filtros {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.users-filtros input,
+.users-filtros select {
+  padding: 11px 13px;
+  border: 1px solid #d9dce5;
+  border-radius: 10px;
+  outline: none;
+  font-size: 14px;
+}
+
+.users-filtros input {
+  flex: 1;
+  min-width: 220px;
+}
+
+.users-contador {
+  color: #6b7280;
+  font-size: 13px;
+  margin: 8px 0 14px;
+}
+
+.users-paginacao {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.users-paginacao button,
+.user-page-num {
+  border: none;
+  padding: 9px 12px;
+  border-radius: 9px;
+  background: #eef2ff;
+  color: #4f6df5;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.user-page-num.active {
+  background: #4f6df5;
+  color: white;
+}
+
+.users-empty {
+  text-align: center;
+  color: #6b7280;
+  padding: 18px;
+}
+
+.role-admin {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.role-operador {
+  background: #eef2ff;
+  color: #4f6df5;
+}
+
+.role-solicitante {
+  background: #ecfdf5;
+  color: #047857;
+}

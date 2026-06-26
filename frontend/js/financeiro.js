@@ -200,7 +200,11 @@ function abrirModal(doc) {
         <p><b>Arquivo salvo:</b> ${doc.arquivo}</p>
 
         <div class="financeiro-acoes">
-          <a href="http://localhost:5000/files/${doc.arquivo}" target="_blank">📥 Baixar arquivo</a>
+          <button
+  class="btn-download"
+  onclick="baixarArquivo('${doc.arquivo}')">
+  📥 Baixar arquivo
+</button>
           <button class="btn-editar" onclick='abrirModalEditar(${JSON.stringify(doc)})'>✏️ Editar</button>
           <button class="btn-excluir" onclick="excluirDocumento('${doc._id}')">🗑 Excluir</button>
         </div>
@@ -290,6 +294,34 @@ function abrirModalEditar(doc) {
 
 function fecharModalEditar() {
   document.getElementById("modalEditar").style.display = "none"
+}
+
+async function baixarArquivo(filename) {
+  const token = localStorage.getItem("token");
+
+  const response = await fetch(`${API_URL}/files/${filename}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    const erro = await response.json().catch(() => ({}));
+    alert(erro.error || "Erro ao baixar o arquivo.");
+    return;
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+
+  URL.revokeObjectURL(url);
 }
 
 async function salvarEdicao() {

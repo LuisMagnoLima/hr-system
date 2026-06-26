@@ -95,6 +95,26 @@
     <button onclick="abrirModalUsuario()">+ Novo Usuário</button>
   </div>
 
+  <div class="users-filtros">
+    <input
+      id="filtroUsuarioBusca"
+      type="text"
+      placeholder="Buscar usuário por email..."
+      oninput="filtrarUsuariosUI()"
+    >
+
+    <select id="filtroUsuarioRole" onchange="filtrarUsuariosUI()">
+      <option value="">Todas as funções</option>
+      <option value="admin">Admin</option>
+      <option value="operador">Operador</option>
+      <option value="solicitante">Solicitante</option>
+    </select>
+  </div>
+
+  <p id="usuariosContador" class="users-contador">
+    0 usuário(s) encontrado(s)
+  </p>
+
   <div class="users-table-wrap">
     <table class="users-table">
       <thead>
@@ -107,6 +127,12 @@
       </thead>
       <tbody id="usuariosTabela"></tbody>
     </table>
+  </div>
+
+  <div class="users-paginacao">
+    <button onclick="paginaUsuariosAnterior()">Anterior</button>
+    <div id="usuariosPageNumeros"></div>
+    <button onclick="proximaPaginaUsuarios()">Próximo</button>
   </div>
 </section>
 

@@ -100,7 +100,7 @@ def dashboard():
         db.auditoria
         .find({})
         .sort("data_hora", -1)
-        .limit(10)
+        .limit(5)
     )
 
     for log in ultimas_acoes:

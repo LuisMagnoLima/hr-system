@@ -32,3 +32,38 @@ async function apiFetch(url, options = {}) {
 
   return res.json()
 }
+
+async function baixarArquivo(filename) {
+  const token = localStorage.getItem("token")
+
+  // abre a aba imediatamente para não ser bloqueada pelo navegador
+  const novaAba = window.open("", "_blank")
+
+  try {
+    const response = await fetch(`${API_URL}/files/${filename}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    if (!response.ok) {
+      const erro = await response.json().catch(() => ({}))
+      alert(erro.error || "Erro ao abrir o PDF.")
+      if (novaAba) novaAba.close()
+      return
+    }
+
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+
+    if (novaAba) {
+      novaAba.location.href = url
+    } else {
+      window.location.href = url
+    }
+  } catch (err) {
+    alert("Erro de conexão ao abrir o PDF.")
+    if (novaAba) novaAba.close()
+  }
+}
+

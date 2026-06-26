@@ -157,21 +157,72 @@ function renderUltimasAcoes(acoes) {
 }
 
 let usuariosGlobal = []
-
+let paginaUsuarios = 1
+const usuariosPorPagina = 5
+let filtroUsuarioBusca = ""
+let filtroUsuarioRole = ""
 async function carregarUsuarios() {
   const users = await apiFetch("/admin/users")
   if (!users) return
 
   usuariosGlobal = users
+  paginaUsuarios = 1
+  renderUsuarios()
+}
 
+function filtrarUsuarios() {
+  return usuariosGlobal.filter(user => {
+    const email = (user.email || "").toLowerCase()
+    const role = user.role || "operador"
+
+    const bateBusca = email.includes(filtroUsuarioBusca)
+    const bateRole = !filtroUsuarioRole || role === filtroUsuarioRole
+
+    return bateBusca && bateRole
+  })
+}
+
+function renderUsuarios() {
   const tbody = document.getElementById("usuariosTabela")
-  tbody.innerHTML = ""
+  const pageNumeros = document.getElementById("usuariosPageNumeros")
+  const contador = document.getElementById("usuariosContador")
 
-  users.forEach(user => {
+  if (!tbody || !pageNumeros) return
+
+  tbody.innerHTML = ""
+  pageNumeros.innerHTML = ""
+
+  const filtrados = filtrarUsuarios()
+  const totalPaginas = Math.max(1, Math.ceil(filtrados.length / usuariosPorPagina))
+
+  if (paginaUsuarios > totalPaginas) {
+    paginaUsuarios = totalPaginas
+  }
+
+  const inicio = (paginaUsuarios - 1) * usuariosPorPagina
+  const fim = inicio + usuariosPorPagina
+  const pagina = filtrados.slice(inicio, fim)
+
+  if (contador) {
+    contador.innerText = `${filtrados.length} usuário(s) encontrado(s)`
+  }
+
+  if (pagina.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" class="users-empty">
+          Nenhum usuário encontrado.
+        </td>
+      </tr>
+    `
+    return
+  }
+
+  pagina.forEach(user => {
     tbody.innerHTML += `
       <tr>
         <td>${user.email}</td>
-        <td><span class="role-badge">${user.role || "operador"}</span></td>
+        <td><span class="role-badge role-${user.role || "operador"}">${user.role || "operador"}</span></td>
         <td>${(user.permissions || []).join(", ") || "-"}</td>
         <td>
           <button class="btn-edit-user" onclick="editarUsuario('${user._id}')">Editar</button>
@@ -181,6 +232,46 @@ async function carregarUsuarios() {
       </tr>
     `
   })
+
+  for (let i = 1; i <= totalPaginas; i++) {
+    const btn = document.createElement("button")
+    btn.className = "user-page-num"
+
+    if (i === paginaUsuarios) {
+      btn.classList.add("active")
+    }
+
+    btn.innerText = i
+    btn.onclick = () => {
+      paginaUsuarios = i
+      renderUsuarios()
+    }
+
+    pageNumeros.appendChild(btn)
+  }
+}
+
+function filtrarUsuariosUI() {
+  filtroUsuarioBusca = document.getElementById("filtroUsuarioBusca").value.toLowerCase().trim()
+  filtroUsuarioRole = document.getElementById("filtroUsuarioRole").value
+  paginaUsuarios = 1
+  renderUsuarios()
+}
+
+function paginaUsuariosAnterior() {
+  if (paginaUsuarios > 1) {
+    paginaUsuarios--
+    renderUsuarios()
+  }
+}
+
+function proximaPaginaUsuarios() {
+  const totalPaginas = Math.max(1, Math.ceil(filtrarUsuarios().length / usuariosPorPagina))
+
+  if (paginaUsuarios < totalPaginas) {
+    paginaUsuarios++
+    renderUsuarios()
+  }
 }
 
 function abrirModalUsuario() {

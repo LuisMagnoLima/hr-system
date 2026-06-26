@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from flask import Blueprint, request, jsonify, send_from_directory, current_app
 from pymongo import MongoClient
 from bson import ObjectId
@@ -33,7 +34,8 @@ def upload():
     now = agora_fortaleza()
 
     doc = {
-        "nome": request.form.get("nome"),
+        "nome": request.form.get("nome"), # <-- visualizar o nome do documento no banco de dados(evitar duplicidade de nomes)
+        "nome_original": file.filename,  # <-- visualizar o nome original do arquivo que foi enviado
         "embalagem": request.form.get("embalagem"),
         "arquivo": filename,
         "anexado_por": request.current_user["email"],
@@ -89,6 +91,7 @@ def financeiro_upload():
 
     doc = {
         "nome": request.form.get("nome"),
+        "nome_original": file.filename,
         "embalagem": request.form.get("embalagem"),
         "arquivo": filename,
         "anexado_por": request.current_user["email"],
@@ -270,10 +273,18 @@ def delete_doc(id):
 @doc_routes.route("/files/<filename>", methods=["GET"])
 @login_required
 def get_file(filename):
+    upload_folder = current_app.config["UPLOAD_FOLDER"]
+    caminho_arquivo = os.path.join(upload_folder, filename)
+
+    if not os.path.exists(caminho_arquivo):
+        return jsonify({
+            "error": "Arquivo não encontrado no servidor."
+        }), 404
+
     return send_from_directory(
-        current_app.config["UPLOAD_FOLDER"],
+        upload_folder,
         filename,
-        as_attachment=True
+        as_attachment=False
     )
 
 

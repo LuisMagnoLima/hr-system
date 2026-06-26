@@ -144,9 +144,9 @@ function renderTabela() {
           </span>
         </td>
         <td>
-          <a class="bd-pdf-link" href="http://localhost:5000/files/${doc.arquivo}" target="_blank">
-            Ver PDF
-          </a>
+         <button class="bd-pdf-link" onclick="baixarArquivo('${doc.arquivo}')">
+              Ver PDF
+        </button>
         </td>
         <td>${doc.embalagem || "Sem armazenamento"}</td>
       </tr>
