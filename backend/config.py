@@ -14,4 +14,4 @@ MONGO_URI = os.getenv("MONGO_URI")
 DB_NAME = os.getenv("DB_NAME")
 
 UPLOAD_FOLDER = os.path.join(BASE_DIR, "uploads")
-MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE", 5 * 1024 * 1024))
+MAX_FILE_SIZE = int(os.getenv("MAX_FILE_SIZE", 1073741824))

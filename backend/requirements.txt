@@ -7,4 +7,5 @@ werkzeug
 python-dotenv
 apscheduler
 pytz
-openpyxl
+gunicorn
+dnspython

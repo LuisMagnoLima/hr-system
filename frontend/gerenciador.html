@@ -77,6 +77,25 @@
       <input type="file" id="file" accept="application/pdf">
     </div>
 
+    <div id="uploadArea" class="upload-area" style="display:none;">
+      <div class="upload-status">
+        <div>
+          <strong id="uploadNomeArquivo">arquivo.pdf</strong>
+          <span id="uploadTamanhoArquivo">0 MB</span>
+        </div>
+        <span id="uploadPorcentagem">0%</span>
+      </div>
+
+      <div class="upload-bar">
+        <div id="uploadBarFill"></div>
+      </div>
+
+      <div class="upload-extra-info">
+        <small id="uploadVelocidade">Preparando envio...</small>
+        <small id="uploadTempoRestante">Calculando tempo...</small>
+      </div>
+    </div>
+
     <button class="ger-primary-btn ger-full-btn" onclick="upload()" id="btnAdicionarTipo">
       Adicionar em ATIVO
     </button>

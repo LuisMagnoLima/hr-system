@@ -81,6 +81,7 @@ function abrirModal() {
   if (nome) nome.value = ""
   if (embalagem) embalagem.value = ""
   if (file) file.value = ""
+  resetarUploadProgress()
   if (modal) modal.style.display = "flex"
 }
 
@@ -132,22 +133,174 @@ async function upload() {
   formData.append("departamento", departamento)
 
   try {
-    const data = await apiFetch("/upload", {
-      method: "POST",
-      body: formData
-    })
+    const data = await enviarArquivoComProgresso("/upload", formData, file)
 
     if (data?.error) {
       alert(data.error)
+      resetarUploadProgress()
       return
     }
 
-    alert("✅ Documento enviado com sucesso")
-    fecharModal()
-    loadDocs()
+    marcarUploadConcluido()
+
+    setTimeout(() => {
+      fecharModal()
+      resetarUploadProgress()
+      loadDocs()
+    }, 900)
   } catch (err) {
-    alert("Erro de conexão com servidor")
+    alert(err?.error || "Erro de conexão com servidor")
+    marcarUploadErro()
   }
+}
+
+function formatarMB(bytes) {
+  return (bytes / 1024 / 1024).toFixed(2) + " MB"
+}
+
+function formatarTempo(segundos) {
+  if (!Number.isFinite(segundos) || segundos < 0) return "Calculando tempo..."
+
+  if (segundos < 60) {
+    return Math.ceil(segundos) + "s restantes"
+  }
+
+  const minutos = Math.floor(segundos / 60)
+  const resto = Math.ceil(segundos % 60)
+  return `${minutos}min ${resto}s restantes`
+}
+
+function prepararUploadProgress(file) {
+  const uploadArea = document.getElementById("uploadArea")
+  const nomeArquivo = document.getElementById("uploadNomeArquivo")
+  const tamanhoArquivo = document.getElementById("uploadTamanhoArquivo")
+  const porcentagem = document.getElementById("uploadPorcentagem")
+  const barra = document.getElementById("uploadBarFill")
+  const velocidade = document.getElementById("uploadVelocidade")
+  const tempo = document.getElementById("uploadTempoRestante")
+  const botao = document.getElementById("btnAdicionarTipo")
+
+  if (uploadArea) uploadArea.style.display = "flex"
+  if (nomeArquivo) nomeArquivo.innerText = file.name
+  if (tamanhoArquivo) tamanhoArquivo.innerText = formatarMB(file.size)
+  if (porcentagem) porcentagem.innerText = "0%"
+  if (barra) {
+    barra.style.width = "0%"
+    barra.classList.remove("upload-success", "upload-error")
+  }
+  if (velocidade) velocidade.innerText = "Preparando envio..."
+  if (tempo) tempo.innerText = "Calculando tempo..."
+  if (botao) {
+    botao.disabled = true
+    botao.innerText = "Enviando..."
+  }
+}
+
+function atualizarUploadProgress(event, inicio) {
+  if (!event.lengthComputable) return
+
+  const porcentagemNumero = Math.round((event.loaded / event.total) * 100)
+  const segundos = (Date.now() - inicio) / 1000
+  const mbEnviados = event.loaded / 1024 / 1024
+  const velocidadeMB = segundos > 0 ? mbEnviados / segundos : 0
+  const restanteBytes = event.total - event.loaded
+  const restanteMB = restanteBytes / 1024 / 1024
+  const tempoRestante = velocidadeMB > 0 ? restanteMB / velocidadeMB : Infinity
+
+  const barra = document.getElementById("uploadBarFill")
+  const porcentagem = document.getElementById("uploadPorcentagem")
+  const velocidade = document.getElementById("uploadVelocidade")
+  const tempo = document.getElementById("uploadTempoRestante")
+
+  if (barra) barra.style.width = porcentagemNumero + "%"
+  if (porcentagem) porcentagem.innerText = porcentagemNumero + "%"
+  if (velocidade) velocidade.innerText = velocidadeMB.toFixed(2) + " MB/s"
+  if (tempo) tempo.innerText = formatarTempo(tempoRestante)
+}
+
+function marcarUploadConcluido() {
+  const barra = document.getElementById("uploadBarFill")
+  const porcentagem = document.getElementById("uploadPorcentagem")
+  const velocidade = document.getElementById("uploadVelocidade")
+  const tempo = document.getElementById("uploadTempoRestante")
+
+  if (barra) {
+    barra.style.width = "100%"
+    barra.classList.add("upload-success")
+  }
+  if (porcentagem) porcentagem.innerText = "100%"
+  if (velocidade) velocidade.innerText = "Upload concluído"
+  if (tempo) tempo.innerText = "Documento enviado com sucesso"
+}
+
+function marcarUploadErro() {
+  const barra = document.getElementById("uploadBarFill")
+  const velocidade = document.getElementById("uploadVelocidade")
+  const tempo = document.getElementById("uploadTempoRestante")
+  const botao = document.getElementById("btnAdicionarTipo")
+
+  if (barra) barra.classList.add("upload-error")
+  if (velocidade) velocidade.innerText = "Erro no upload"
+  if (tempo) tempo.innerText = "Tente novamente"
+  if (botao) {
+    botao.disabled = false
+    atualizarStatusVisual()
+  }
+}
+
+function resetarUploadProgress() {
+  const uploadArea = document.getElementById("uploadArea")
+  const barra = document.getElementById("uploadBarFill")
+  const porcentagem = document.getElementById("uploadPorcentagem")
+  const botao = document.getElementById("btnAdicionarTipo")
+
+  if (uploadArea) uploadArea.style.display = "none"
+  if (barra) {
+    barra.style.width = "0%"
+    barra.classList.remove("upload-success", "upload-error")
+  }
+  if (porcentagem) porcentagem.innerText = "0%"
+  if (botao) {
+    botao.disabled = false
+    atualizarStatusVisual()
+  }
+}
+
+function enviarArquivoComProgresso(url, formData, file) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    const inicio = Date.now()
+
+    prepararUploadProgress(file)
+
+    xhr.upload.addEventListener("progress", event => {
+      atualizarUploadProgress(event, inicio)
+    })
+
+    xhr.onload = () => {
+      let data = {}
+
+      try {
+        data = JSON.parse(xhr.responseText || "{}")
+      } catch (e) {
+        data = { error: "Erro ao processar resposta do servidor" }
+      }
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(data)
+      } else {
+        reject(data)
+      }
+    }
+
+    xhr.onerror = () => {
+      reject({ error: "Erro de conexão com servidor" })
+    }
+
+    xhr.open("POST", API_URL + url)
+    xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem("token"))
+    xhr.send(formData)
+  })
 }
 
 function setFiltro(tipo, el) {

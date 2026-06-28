@@ -37,4 +37,4 @@ scheduler.add_job(limpar_arquivos_antigos, "interval", days=1.826)
 scheduler.start()
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
