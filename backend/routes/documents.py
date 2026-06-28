@@ -26,12 +26,19 @@ def upload():
     if not file:
         return jsonify({"error": "Arquivo obrigatório"}), 400
 
-    filename = save_file(file, current_app.config["UPLOAD_FOLDER"])
+    now = agora_fortaleza()
+
+    filename = save_file(
+        file,
+        current_app.config["UPLOAD_FOLDER"],
+        request.form.get("departamento"),
+        now.year,
+        now.month
+    )
 
     if not filename:
         return jsonify({"error": "Apenas PDF permitido"}), 400
 
-    now = agora_fortaleza()
 
     doc = {
         "nome": request.form.get("nome"), # <-- visualizar o nome do documento no banco de dados(evitar duplicidade de nomes)
@@ -82,12 +89,19 @@ def financeiro_upload():
     if not file:
         return jsonify({"error": "Arquivo obrigatório"}), 400
 
-    filename = save_file(file, current_app.config["UPLOAD_FOLDER"])
+    now = agora_fortaleza()
+
+    filename = save_file(
+        file,
+        current_app.config["UPLOAD_FOLDER"],
+        request.form.get("departamento"),
+        now.year,
+        now.month
+    )
 
     if not filename:
         return jsonify({"error": "Apenas PDF permitido"}), 400
 
-    now = agora_fortaleza()
 
     doc = {
         "nome": request.form.get("nome"),
@@ -270,7 +284,7 @@ def delete_doc(id):
         return jsonify({"error": "ID inválido"}), 400
 
 
-@doc_routes.route("/files/<filename>", methods=["GET"])
+@doc_routes.route("/files/<path:filename>", methods=["GET"])
 @login_required
 def get_file(filename):
     upload_folder = current_app.config["UPLOAD_FOLDER"]
