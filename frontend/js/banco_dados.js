@@ -194,33 +194,6 @@ function paginaAnterior() {
   }
 }
 
-async function exportarExcel() {
-
-    const token = localStorage.getItem("token")
-
-    const response = await fetch(`${API_URL}/export/excel`, {
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    })
-
-    if (!response.ok) {
-        alert("Erro ao exportar.")
-        return
-    }
-
-    const blob = await response.blob()
-
-    const url = URL.createObjectURL(blob)
-
-    const a = document.createElement("a")
-    a.href = url
-    a.download = "documentos.xlsx"
-    a.click()
-
-    URL.revokeObjectURL(url)
-}
-
 function proximaPagina() {
   const docs = filtrarDocumentos()
   const totalPaginas = Math.max(1, Math.ceil(docs.length / itensPorPagina))

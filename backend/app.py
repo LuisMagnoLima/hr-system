@@ -12,7 +12,6 @@ from routes.auditoria import auditoria_routes
 from config import MONGO_URI
 from routes.dashboard import dashboard_routes
 from routes.users import users_routes
-from routes.export import export_routes
 
 app = Flask(__name__)
 CORS(app)
@@ -26,7 +25,6 @@ app.register_blueprint(solicitacoes_routes)
 app.register_blueprint(auditoria_routes)
 app.register_blueprint(dashboard_routes)
 app.register_blueprint(users_routes)
-app.register_blueprint(export_routes)
 
 @app.route("/files/<filename>")
 def get_file(filename):
