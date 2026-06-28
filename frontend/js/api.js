@@ -3,7 +3,7 @@ const API_URL =
   window.location.hostname === "127.0.0.1" ||
   window.location.hostname === ""
     ? "http://localhost:5000"
-    : "https://SEU-BACKEND-PUBLICO.com"
+    : "https://inagrohrsystem.onrender.com"
 
 function getToken() {
   return localStorage.getItem("token")
