@@ -11,4 +11,4 @@ scripts/
 
 uploads/**/*
 !uploads/**/
-!.gitkeep
+!uploads/**/.gitkeep
