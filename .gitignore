@@ -9,5 +9,6 @@ __pycache__/
 
 scripts/
 
-uploads/
-.env
+uploads/**/*
+!uploads/**/
+!.gitkeep
