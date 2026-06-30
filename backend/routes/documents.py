@@ -294,7 +294,13 @@ def get_file(filename):
         return jsonify({
             "error": "Arquivo não encontrado no servidor."
         }), 404
-
+    registrar_auditoria(
+    "visualizar_documento",
+    request.current_user["email"],
+    {
+        "arquivo": filename
+    }
+)
     return send_from_directory(
         upload_folder,
         filename,

@@ -28,9 +28,21 @@ app.register_blueprint(dashboard_routes)
 app.register_blueprint(users_routes)
 app.register_blueprint(arquivamentos_routes)
 
-scheduler = BackgroundScheduler()
-scheduler.add_job(rotina_arquivamento, "cron", hour=2, minute=0)
+scheduler = BackgroundScheduler(timezone="America/Fortaleza")
+
+scheduler.add_job(
+    rotina_arquivamento,
+    "cron",
+    hour=2,
+    minute=0,
+    misfire_grace_time=86400,
+    max_instances=1
+)
+
 scheduler.start()
-rotina_arquivamento()
+
+import atexit
+atexit.register(lambda: scheduler.shutdown())
+
 if __name__ == "__main__":
     app.run(debug=False)

@@ -4,26 +4,35 @@ function voltarBanco() {
 
 function traduzirAcao(acao) {
   const mapa = {
-    login_sucesso: "Login com sucesso",
-    login_falhou: "Falha no login",
-    upload_documento: "Upload de documento",
-    upload_financeiro: "Upload financeiro",
-    delete_documento: "Exclusão de documento",
-    delete_documento_financeiro: "Exclusão pelo financeiro",
-    editar_documento_financeiro: "Edição pelo financeiro",
-    confirmar_documento_financeiro: "Confirmação pelo financeiro",
-    desconfirmar_documento_financeiro: "Remoção de confirmação",
-    criar_solicitacao: "Criação de solicitação",
-    processar_solicitacao: "Processamento de solicitação",
-    admin_criar_usuario: "Criação de usuário",
-    admin_editar_usuario: "Edição de usuário",
-    admin_alterar_senha_usuario: "Alteração de senha",
-    admin_excluir_usuario: "Exclusão de usuário"
-  }
+  login_sucesso: "Login com sucesso",
+  login_falhou: "Falha no login",
+  logout: "Logout",
+
+  upload_documento: "Upload de documento",
+  upload_financeiro: "Upload financeiro",
+  visualizar_documento: "Visualização de documento",
+  editar_documento_financeiro: "Edição pelo financeiro",
+  confirmar_documento_financeiro: "Confirmado pelo financeiro",
+  desconfirmar_documento_financeiro: "Confirmação removida",
+  delete_documento_financeiro: "Exclusão pelo financeiro",
+
+  criar_solicitacao: "Criação de solicitação",
+  processar_solicitacao: "Processamento de solicitação",
+
+  arquivar_documento: "Arquivamento automático",
+  restaurar_arquivamento: "Restauração de arquivado",
+  excluir_arquivamento_definitivo: "Exclusão definitiva",
+
+  admin_criar_usuario: "Criação de usuário",
+  admin_editar_usuario: "Edição de usuário",
+  admin_alterar_senha_usuario: "Alteração de senha",
+  admin_excluir_usuario: "Exclusão de usuário",
+
+  tentativa_acesso_negado: "Tentativa de acesso negado"
+};
 
   return mapa[acao] || acao
 }
-
 function formatarData(log) {
   if (log.dia && log.mes && log.ano && log.hora) {
     const dia = String(log.dia).padStart(2, "0")

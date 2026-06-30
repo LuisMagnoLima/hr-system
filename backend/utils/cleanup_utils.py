@@ -3,7 +3,7 @@ import shutil
 from datetime import datetime, timedelta
 from pymongo import MongoClient
 import pytz
-
+from utils.audit_utils import registrar_auditoria
 from config import MONGO_URI, DB_NAME, UPLOAD_FOLDER
 
 client = MongoClient(MONGO_URI)
@@ -50,6 +50,16 @@ def arquivar_documentos_antigos():
 
         db.arquivamentos.insert_one(doc)
         db.documents.delete_one({"_id": doc["_id"]})
+        registrar_auditoria(
+        "arquivar_documento",
+         "sistema",
+            {
+        "nome": doc.get("nome"),
+        "arquivo": doc.get("arquivo"),
+        "departamento": doc.get("departamento"),
+        "modulo": doc.get("modulo")
+         }
+)
 
         arquivados += 1
 
@@ -82,6 +92,17 @@ def excluir_arquivamentos_expirados():
                     continue
 
         db.arquivamentos.delete_one({"_id": doc["_id"]})
+
+        registrar_auditoria(
+    "excluir_arquivamento_definitivo",
+    "sistema",
+    {
+        "nome": doc.get("nome"),
+        "arquivo": doc.get("arquivo"),
+        "departamento": doc.get("departamento"),
+        "modulo": doc.get("modulo")
+    }
+)
         removidos += 1
 
     print(f"🗑️ Exclusão definitiva concluída. {removidos} arquivamento(s) removido(s).")
