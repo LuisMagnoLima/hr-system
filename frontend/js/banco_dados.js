@@ -204,5 +204,111 @@ function proximaPagina() {
   }
 }
 
+let arquivadosGlobal = []
+let intervaloArquivados = null
+
+async function abrirArquivados() {
+  document.getElementById("modalArquivados").style.display = "flex"
+
+  await carregarArquivados()
+
+  intervaloArquivados = setInterval(() => {
+    carregarArquivados()
+  }, 10000)
+}
+
+function fecharArquivados() {
+  document.getElementById("modalArquivados").style.display = "none"
+
+  if (intervaloArquivados) {
+    clearInterval(intervaloArquivados)
+    intervaloArquivados = null
+  }
+}
+
+async function carregarArquivados() {
+  const dados = await apiFetch("/arquivamentos")
+  if (!dados) return
+
+  arquivadosGlobal = dados
+  renderArquivados()
+}
+
+function renderArquivados() {
+  const tbody = document.getElementById("tabelaArquivados")
+  const busca = (document.getElementById("buscaArquivados")?.value || "")
+    .toLowerCase()
+    .trim()
+
+  tbody.innerHTML = ""
+
+  const filtrados = arquivadosGlobal.filter(doc => {
+    const texto = `${doc.nome || ""} ${doc.departamento || ""} ${doc.modulo || ""}`.toLowerCase()
+    return texto.includes(busca)
+  })
+
+  if (filtrados.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align:center; padding:20px;">
+          Nenhum documento arquivado encontrado.
+        </td>
+      </tr>
+    `
+    return
+  }
+
+  filtrados.forEach(doc => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${doc.nome || "-"}</td>
+        <td>${doc.departamento || "-"}</td>
+        <td>${doc.modulo || "-"}</td>
+        <td>${formatarDataArquivamento(doc)}</td>
+        <td>${calcularExpiraEm(doc)}</td>
+        <td>
+          <button class="bd-btn-restaurar" onclick="restaurarArquivamento('${doc._id}')">
+            ↩ Restaurar
+          </button>
+        </td>
+      </tr>
+    `
+  })
+}
+
+function formatarDataArquivamento(doc) {
+  if (!doc.data_arquivamento) return "-"
+
+  const data = new Date(doc.data_arquivamento)
+  return data.toLocaleDateString("pt-BR")
+}
+
+function calcularExpiraEm(doc) {
+  if (!doc.data_arquivamento) return "-"
+
+  const data = new Date(doc.data_arquivamento)
+  data.setMonth(data.getMonth() + 6)
+
+  return data.toLocaleDateString("pt-BR")
+}
+
+async function restaurarArquivamento(id) {
+  if (!confirm("Deseja restaurar este documento? A contagem de 5 anos será reiniciada.")) return
+
+  const data = await apiFetch(`/arquivamentos/${id}/restaurar`, {
+    method: "POST"
+  })
+
+  if (data?.error) {
+    alert(data.error)
+    return
+  }
+
+  alert("Documento restaurado com sucesso")
+
+  await carregarArquivados()
+  await carregarDados()
+}
+
 preencherUsuario()
 carregarDados()

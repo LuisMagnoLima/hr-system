@@ -296,3 +296,80 @@ body {
 .bd-btn-dashboard:hover {
   opacity: 0.9;
 }
+.bd-btn-arquivados {
+  background: #6b7280;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.bd-btn-atualizar-arq {
+  background: #4f6df5;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.bd-btn-restaurar {
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 9px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.bd-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.55);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+.bd-modal-content {
+  background: white;
+  border-radius: 18px;
+  padding: 24px;
+  width: 520px;
+  max-width: calc(100% - 24px);
+  max-height: 85vh;
+  overflow: auto;
+}
+
+.bd-modal-large {
+  width: 960px;
+}
+
+.bd-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.bd-modal-header button {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.bd-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d9dce5;
+  border-radius: 10px;
+  margin-bottom: 14px;
+}

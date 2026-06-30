@@ -71,3 +71,7 @@ async function processar(id) {
 }
 
 carregarNotificacoes()
+
+setInterval(() => {
+  carregarNotificacoes()
+}, 5000)

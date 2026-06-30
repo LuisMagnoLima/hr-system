@@ -23,6 +23,7 @@
         📊 Ver Dashboard
         </button>
         <button onclick="window.location.href='auditoria.html'">Ver Auditoria</button>
+        <button class="bd-btn-arquivados" onclick="abrirArquivados()">📦 Arquivados</button>
       </div>
     </div>
 
@@ -76,6 +77,41 @@
       <button class="bd-page-btn bd-page-btn-primary" onclick="proximaPagina()">Próximo</button>
     </div>
 
+  </div>
+</div>
+<div id="modalArquivados" class="bd-modal">
+  <div class="bd-modal-content bd-modal-large">
+    <div class="bd-modal-header">
+      <h2>📦 Documentos Arquivados</h2>
+
+      <div>
+        <button class="bd-btn-atualizar-arq" onclick="carregarArquivados()">🔄 Atualizar</button>
+        <button onclick="fecharArquivados()">✕</button>
+      </div>
+    </div>
+
+    <input
+      id="buscaArquivados"
+      class="bd-input"
+      placeholder="Buscar por nome, secretaria ou módulo..."
+      oninput="renderArquivados()"
+    >
+
+    <div class="bd-table-wrap">
+      <table class="bd-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Secretaria</th>
+            <th>Módulo</th>
+            <th>Arquivado em</th>
+            <th>Expira em</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaArquivados"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 <script src="js/api.js"></script>
