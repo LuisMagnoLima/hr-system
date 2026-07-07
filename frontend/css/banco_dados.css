@@ -283,55 +283,98 @@ body {
   }
 }
 
+/* ==========================================================
+   BOTÕES SUPERIORES DO BANCO DE DADOS
+========================================================== */
+
+.bd-topo-direita {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bd-topo-direita button {
+  height: 46px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+
+  color: white;
+  transition: 0.25s ease;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.bd-topo-direita button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.18);
+}
+
+.bd-topo-direita button:active {
+  transform: scale(0.97);
+}
+
+.bd-voltar {
+  background: white !important;
+  color: #334155 !important;
+  border: 1px solid #d9dce5 !important;
+  box-shadow: none !important;
+}
+
+.bd-voltar:hover {
+  background: #f8fafc !important;
+  text-decoration: none;
+}
+
 .bd-btn-dashboard {
-  background: #7c3aed;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 11px 16px;
-  cursor: pointer;
-  font-weight: bold;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
 }
 
-.bd-btn-dashboard:hover {
-  opacity: 0.9;
+.bd-btn-auditoria {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
 }
+
 .bd-btn-arquivados {
-  background: #6b7280;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  padding: 11px 16px;
-  cursor: pointer;
-  font-weight: bold;
+  background: linear-gradient(135deg, #374151, #4b5563);
 }
 
-.bd-btn-atualizar-arq {
-  background: #4f6df5;
+.bd-add-btn {
+  background: linear-gradient(135deg, #4f6df5, #3b56d9);
   color: white;
   border: none;
-  border-radius: 9px;
-  padding: 8px 12px;
+  border-radius: 12px;
+  padding: 12px 18px;
+  font-size: 14px;
+  font-weight: 700;
   cursor: pointer;
-  font-weight: bold;
-  margin-right: 8px;
+  transition: 0.25s ease;
+  box-shadow: 0 8px 18px rgba(79, 109, 245, 0.22);
 }
 
-.bd-btn-restaurar {
-  background: #28a745;
-  color: white;
-  border: none;
-  border-radius: 9px;
-  padding: 8px 12px;
-  cursor: pointer;
-  font-weight: bold;
+.bd-add-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(79, 109, 245, 0.32);
 }
+
+/* ==========================================================
+   MODAL DE ARQUIVADOS
+========================================================== */
 
 .bd-modal {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(17, 24, 39, 0.55);
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(4px);
   z-index: 9999;
   align-items: center;
   justify-content: center;
@@ -339,37 +382,223 @@ body {
 
 .bd-modal-content {
   background: white;
-  border-radius: 18px;
-  padding: 24px;
-  width: 520px;
-  max-width: calc(100% - 24px);
-  max-height: 85vh;
-  overflow: auto;
+  border-radius: 20px;
+  width: 1100px;
+  max-width: 95%;
+  max-height: 88vh;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.28);
 }
 
 .bd-modal-large {
-  width: 960px;
+  width: 1100px;
 }
 
 .bd-modal-header {
+  background: linear-gradient(135deg, #1e3a8a, #273f91);
+  color: white;
+  padding: 24px 28px;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  gap: 18px;
 }
 
-.bd-modal-header button {
+.bd-modal-header h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.bd-modal-header p {
+  margin: 6px 0 0;
+  color: #dbeafe;
+  font-size: 14px;
+}
+
+.bd-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+#totalArquivados {
+  background: rgba(255, 255, 255, 0.18);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.bd-btn-atualizar-arq,
+.bd-btn-fechar-arq {
   border: none;
-  background: transparent;
-  font-size: 18px;
+  border-radius: 10px;
+  padding: 9px 12px;
   cursor: pointer;
-  font-weight: bold;
+  font-weight: 800;
+  transition: 0.2s ease;
+}
+
+.bd-btn-atualizar-arq {
+  background: #eef2ff;
+  color: #1e3a8a;
+}
+
+.bd-btn-atualizar-arq:hover {
+  background: #dbeafe;
+  transform: translateY(-1px);
+}
+
+.bd-btn-fechar-arq {
+  background: #ef4444;
+  color: white;
+}
+
+.bd-btn-fechar-arq:hover {
+  background: #dc2626;
+  transform: translateY(-1px);
+}
+
+.bd-modal-body {
+  padding: 22px;
+  overflow: auto;
 }
 
 .bd-input {
   width: 100%;
-  padding: 12px 14px;
-  border: 1px solid #d9dce5;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid #d7dce7;
+  padding: 0 16px;
+  font-size: 15px;
+  margin-bottom: 18px;
+  outline: none;
+}
+
+.bd-input:focus {
+  border-color: #4f6df5;
+  box-shadow: 0 0 0 3px rgba(79, 109, 245, 0.12);
+}
+
+.bd-table-wrap {
+  max-height: 480px;
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid #dfe4ef;
+}
+
+.bd-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bd-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.bd-table th {
+  background: #f3f6fb;
+  padding: 15px;
+  text-align: left;
+  font-weight: 800;
+  color: #1f2a44;
+  border-bottom: 1px solid #dfe4ef;
+  white-space: nowrap;
+}
+
+.bd-table td {
+  padding: 14px 15px;
+  border-bottom: 1px solid #eef1f6;
+  color: #2c3140;
+  vertical-align: middle;
+}
+
+.bd-table tbody tr:nth-child(even) {
+  background: #fafbff;
+}
+
+.bd-table tbody tr:hover {
+  background: #eef5ff;
+}
+
+.bd-btn-restaurar {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 9px 15px;
   border-radius: 10px;
-  margin-bottom: 14px;
+  cursor: pointer;
+  font-weight: 800;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.bd-btn-restaurar:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+}
+
+.badge-expira {
+  display: inline-block;
+  padding: 7px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.expira-verde {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.expira-amarelo {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.expira-vermelho {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.bd-modal-footer {
+  padding: 16px 24px;
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  color: #4b5563;
+}
+
+@media (max-width: 900px) {
+  .bd-modal-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .bd-modal-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .bd-table-wrap {
+    max-height: 430px;
+  }
+
+  .bd-topo-direita {
+    gap: 10px;
+  }
+
+  .bd-topo-direita button {
+    flex: 1;
+    min-width: 150px;
+  }
 }

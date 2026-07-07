@@ -247,6 +247,12 @@ function renderArquivados() {
     return texto.includes(busca)
   })
 
+  document.getElementById("totalArquivados").innerText =
+  `${filtrados.length} documento(s)`
+
+  document.getElementById("rodapeArquivados").innerText =
+  filtrados.length
+
   if (filtrados.length === 0) {
     tbody.innerHTML = `
       <tr>
@@ -286,10 +292,28 @@ function formatarDataArquivamento(doc) {
 function calcularExpiraEm(doc) {
   if (!doc.data_arquivamento) return "-"
 
-  const data = new Date(doc.data_arquivamento)
-  data.setMonth(data.getMonth() + 6)
+  const dataArquivamento = new Date(doc.data_arquivamento)
+  const expira = new Date(dataArquivamento)
+  expira.setMonth(expira.getMonth() + 6)
 
-  return data.toLocaleDateString("pt-BR")
+  const hoje = new Date()
+  const diffMs = expira - hoje
+  const diasRestantes = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+
+  let classe = "expira-verde"
+  let texto = `${diasRestantes} dias`
+
+  if (diasRestantes <= 30) {
+    classe = "expira-vermelho"
+  } else if (diasRestantes <= 120) {
+    classe = "expira-amarelo"
+  }
+
+  return `
+    <span class="badge-expira ${classe}">
+      ${expira.toLocaleDateString("pt-BR")} · ${texto}
+    </span>
+  `
 }
 
 async function restaurarArquivamento(id) {
