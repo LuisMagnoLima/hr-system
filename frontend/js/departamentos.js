@@ -1,4 +1,4 @@
-const departamentos = ["AGERP", "ITERMA", "SAFE", "SEDES", "SEGOV"]
+const departamentos = ["AGERP", "ITERMA", "SAF", "SEDES", "SEGOV"]
 
 function getModuloAtual() {
   return localStorage.getItem("modulo") || "notas"
