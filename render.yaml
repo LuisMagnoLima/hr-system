@@ -1,0 +1,44 @@
+services:
+  - type: web
+    name: inagro-protocolos
+    runtime: python
+    plan: free
+    autoDeploy: true
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: gunicorn --chdir backend app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
+    healthCheckPath: /health
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: SECRET_KEY
+        generateValue: true
+      - key: MONGO_URI
+        sync: false
+      - key: DB_NAME
+        value: hr_system
+      - key: MAX_FILE_SIZE
+        value: "104857600"
+      - key: UPLOAD_FOLDER
+        value: uploads
+      - key: COOKIE_NAME
+        value: hr_session
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: COOKIE_SAMESITE
+        value: Lax
+      - key: TOKEN_HOURS
+        value: "8"
+      - key: ENABLE_SCHEDULER
+        value: "false"
+      - key: MONGO_SERVER_SELECTION_TIMEOUT_MS
+        value: "5000"
+      - key: MONGO_CONNECT_TIMEOUT_MS
+        value: "5000"
+      - key: MONGO_SOCKET_TIMEOUT_MS
+        value: "20000"
+      - key: MONGO_MIN_POOL_SIZE
+        value: "1"
+      - key: MONGO_MAX_POOL_SIZE
+        value: "50"

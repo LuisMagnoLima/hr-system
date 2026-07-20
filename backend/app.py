@@ -3,6 +3,8 @@ import logging
 import os
 import re
 
+from pathlib import Path
+
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, jsonify
 from flask_cors import CORS
@@ -26,9 +28,16 @@ from utils.cleanup_utils import rotina_arquivamento
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
 
+BASE_DIR = Path(__file__).resolve().parent
+FRONTEND_DIR = BASE_DIR.parent / "frontend"
+
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(
+        __name__,
+        static_folder=str(FRONTEND_DIR),
+        static_url_path="",
+    )
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
     app.config.update(
         UPLOAD_FOLDER=UPLOAD_FOLDER,
@@ -72,6 +81,10 @@ def create_app():
     verificar_conexao()
     criar_indices()
     preparar_secretarias()
+
+    @app.get("/")
+    def frontend_login():
+        return app.send_static_file("login.html")
 
     @app.get("/health")
     def health():
@@ -120,4 +133,5 @@ def create_app():
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    port = int(os.getenv("PORT", "5000"))
+    app.run(host="0.0.0.0", port=port, debug=False)
