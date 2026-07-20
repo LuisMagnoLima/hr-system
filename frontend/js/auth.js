@@ -52,12 +52,12 @@ async function login() {
     sessionStorage.setItem("hr_user", JSON.stringify(user))
 
     if (user.role === "admin") {
-      window.location.replace("banco_dados.html")
-    } else if ((user.permissions || []).includes("financeiro")) {
-      window.location.replace("financeiro.html")
-    } else {
-      window.location.replace("menu.html")
-    }
+  window.location.replace("/banco_dados.html")
+} else if ((user.permissions || []).includes("financeiro")) {
+  window.location.replace("/financeiro.html")
+} else {
+  window.location.replace("/menu.html")
+}
   } catch (error) {
     showLoginMessage(error.message || "Não foi possível realizar o login.")
     passwordInput.select()
