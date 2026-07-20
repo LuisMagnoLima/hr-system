@@ -34,9 +34,35 @@ function getSecretariaAtual() {
 }
 
 function preencherCabecalho() {
-  const secretaria = getSecretariaAtual()
-  document.getElementById("solTitulo").innerText = `Protocolo de Recebimento - ${secretaria}`
-  document.getElementById("secretaria").value = secretaria
+  document.getElementById("solTitulo").innerText = "Protocolo de Recebimento"
+}
+
+
+async function carregarSecretarias() {
+  const select = document.getElementById("secretaria")
+  const secretariaAtual = getSecretariaAtual()
+
+  select.innerHTML = `<option value="">Selecione uma secretaria</option>`
+
+  try {
+    const secretarias = await apiFetch("/secretarias")
+
+    if (!Array.isArray(secretarias)) return
+
+    secretarias.forEach(secretaria => {
+      const option = document.createElement("option")
+      option.value = secretaria.sigla
+      option.textContent = `${secretaria.sigla} - ${secretaria.nome}`
+      select.appendChild(option)
+    })
+
+    if ([...select.options].some(option => option.value === secretariaAtual)) {
+      select.value = secretariaAtual
+    }
+  } catch (err) {
+    console.error("Erro ao carregar secretarias:", err)
+    alert(err.message || "Erro ao carregar secretarias")
+  }
 }
 
 async function carregarUsuariosPorPermissao() {
@@ -124,5 +150,9 @@ function voltar() {
 
 bloquearNaoSolicitante()
 preencherCabecalho()
-carregarUsuariosPorPermissao()
-document.getElementById("numeroOficio").focus()
+
+;(async () => {
+  await carregarSecretarias()
+  await carregarUsuariosPorPermissao()
+  document.getElementById("numeroOficio").focus()
+})()
