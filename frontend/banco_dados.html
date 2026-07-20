@@ -114,6 +114,31 @@
     </div>
   </div>
 </div>
+
+<div id="modalPdfBanco" class="bd-modal">
+  <div class="bd-modal-content bd-pdf-modal">
+    <div class="bd-modal-header">
+      <h2 id="tituloPdfBanco">Visualizar PDF</h2>
+      <button type="button" onclick="fecharPdfBanco()">✕</button>
+    </div>
+
+    <iframe
+      id="viewerPdfBanco"
+      class="bd-pdf-viewer"
+      title="Visualizador de PDF"
+    ></iframe>
+
+    <div class="bd-pdf-actions">
+      <button class="bd-btn-download" type="button" onclick="baixarPdfBancoAtual()">
+        Baixar PDF
+      </button>
+      <button class="bd-btn-fechar-pdf" type="button" onclick="fecharPdfBanco()">
+        Fechar
+      </button>
+    </div>
+  </div>
+</div>
+
 <script src="js/api.js"></script>
 <script src="js/banco_dados.js"></script>
 </body>

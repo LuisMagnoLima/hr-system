@@ -201,8 +201,8 @@ function abrirModal(doc) {
         <div class="financeiro-acoes">
           <button
   class="btn-download"
-  onclick="baixarArquivo('${doc.arquivo}')">
-  📥 Baixar arquivo
+  onclick="abrirPdfFinanceiro('${doc._id}')">
+  👁 Abrir PDF
 </button>
           <button class="btn-editar" onclick='abrirModalEditar(${JSON.stringify(doc)})'>✏️ Editar</button>
           <button class="btn-excluir" onclick="excluirDocumento('${doc._id}')">🗑 Excluir</button>
@@ -319,6 +319,78 @@ async function baixarArquivo(filename) {
   URL.revokeObjectURL(url);
 }
 
+
+
+let pdfFinanceiroAtual = null
+
+async function abrirPdfFinanceiro(id) {
+  const doc = docsGlobal.find(item => item._id === id)
+  const modal = document.getElementById("modalPdfFinanceiro")
+  const viewer = document.getElementById("viewerPdfFinanceiro")
+  const titulo = document.getElementById("tituloPdfFinanceiro")
+
+  if (!modal || !viewer) return
+
+  try {
+    const response = await fetch(`${API_URL}/documents/${id}/pdf`, {
+      credentials: "include"
+    })
+
+    if (!response.ok) {
+      const erro = await response.json().catch(() => ({}))
+      alert(erro.error || "Não foi possível abrir o PDF")
+      return
+    }
+
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+
+    fecharPdfFinanceiro()
+
+    pdfFinanceiroAtual = {
+      url,
+      nome: doc?.arquivo_nome || doc?.nome_original || doc?.arquivo || "documento.pdf"
+    }
+
+    if (titulo) {
+      titulo.innerText = doc?.nome || "Visualizar PDF"
+    }
+
+    viewer.src = url
+    modal.style.display = "block"
+  } catch (error) {
+    console.error(error)
+    alert("Erro de conexão ao carregar o PDF")
+  }
+}
+
+function fecharPdfFinanceiro() {
+  const modal = document.getElementById("modalPdfFinanceiro")
+  const viewer = document.getElementById("viewerPdfFinanceiro")
+
+  if (viewer) viewer.src = ""
+
+  if (pdfFinanceiroAtual?.url) {
+    URL.revokeObjectURL(pdfFinanceiroAtual.url)
+  }
+
+  pdfFinanceiroAtual = null
+
+  if (modal) modal.style.display = "none"
+}
+
+function baixarPdfFinanceiroAtual() {
+  if (!pdfFinanceiroAtual) return
+
+  const link = document.createElement("a")
+  link.href = pdfFinanceiroAtual.url
+  link.download = pdfFinanceiroAtual.nome
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+}
+
+
 async function salvarEdicao() {
   const id = document.getElementById("editId").value
 
@@ -433,10 +505,12 @@ window.onclick = function(event) {
   const modal = document.getElementById("modal")
   const modalCriar = document.getElementById("modalCriar")
   const modalEditar = document.getElementById("modalEditar")
+  const modalPdf = document.getElementById("modalPdfFinanceiro")
 
   if (event.target === modal) fecharModal()
   if (event.target === modalCriar) fecharModalCriar()
   if (event.target === modalEditar) fecharModalEditar()
+  if (event.target === modalPdf) fecharPdfFinanceiro()
 }
 
 async function carregarSecretariasFinanceiro() {
@@ -463,3 +537,10 @@ async function carregarSecretariasFinanceiro() {
 }
 
 ;(async () => { await carregarSecretariasFinanceiro(); await carregarDados() })()
+
+
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Escape") {
+    fecharPdfFinanceiro()
+  }
+})

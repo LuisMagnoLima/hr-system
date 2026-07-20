@@ -619,3 +619,97 @@ body {
 .resumo-confirmado{
     border-left-color:#28a745;
 }
+
+/* Visualizador interno de PDF */
+.financeiro-pdf-overlay {
+  z-index: 1200;
+}
+
+.financeiro-pdf-modal {
+  width: 1100px;
+  max-width: calc(100% - 24px);
+  height: 90vh;
+  max-height: 90vh;
+  margin: 5vh auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.financeiro-pdf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.financeiro-pdf-header h3 {
+  margin: 0;
+}
+
+.financeiro-pdf-close {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+  color: #6c7280;
+}
+
+.financeiro-pdf-viewer {
+  width: 100%;
+  flex: 1;
+  min-height: 500px;
+  border: 1px solid #d9dce5;
+  border-radius: 12px;
+  background: #f5f6fa;
+}
+
+.financeiro-pdf-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.financeiro-pdf-download,
+.financeiro-pdf-cancel {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.financeiro-pdf-download {
+  background: #4f6df5;
+  color: white;
+}
+
+.financeiro-pdf-cancel {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+@media (max-width: 650px) {
+  .financeiro-pdf-modal {
+    width: calc(100% - 16px);
+    height: calc(100vh - 16px);
+    max-height: calc(100vh - 16px);
+    margin: 8px auto;
+    padding: 14px;
+  }
+
+  .financeiro-pdf-viewer {
+    min-height: 350px;
+  }
+
+  .financeiro-pdf-actions {
+    flex-direction: column;
+  }
+
+  .financeiro-pdf-download,
+  .financeiro-pdf-cancel {
+    width: 100%;
+  }
+}

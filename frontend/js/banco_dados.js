@@ -144,7 +144,7 @@ function renderTabela() {
           </span>
         </td>
         <td>
-         <button class="bd-pdf-link" onclick="baixarArquivo('${doc.arquivo}')">
+         <button class="bd-pdf-link" type="button" onclick="abrirPdfBanco('${doc._id}')">
               Ver PDF
         </button>
         </td>
@@ -309,6 +309,88 @@ async function restaurarArquivamento(id) {
   await carregarArquivados()
   await carregarDados()
 }
+
+
+
+let pdfBancoAtual = null
+
+async function abrirPdfBanco(id) {
+  const doc = docsGlobal.find(item => item._id === id)
+  const modal = document.getElementById("modalPdfBanco")
+  const viewer = document.getElementById("viewerPdfBanco")
+  const titulo = document.getElementById("tituloPdfBanco")
+
+  if (!modal || !viewer) return
+
+  try {
+    const response = await fetch(`${API_URL}/documents/${id}/pdf`, {
+      credentials: "include"
+    })
+
+    if (!response.ok) {
+      const erro = await response.json().catch(() => ({}))
+      alert(erro.error || "Não foi possível abrir o PDF")
+      return
+    }
+
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+
+    fecharPdfBanco()
+
+    pdfBancoAtual = {
+      url,
+      nome: doc?.arquivo_nome || doc?.nome_original || doc?.arquivo || "documento.pdf"
+    }
+
+    if (titulo) {
+      titulo.innerText = doc?.nome || "Visualizar PDF"
+    }
+
+    viewer.src = url
+    modal.style.display = "flex"
+  } catch (error) {
+    console.error(error)
+    alert("Erro de conexão ao carregar o PDF")
+  }
+}
+
+function fecharPdfBanco() {
+  const modal = document.getElementById("modalPdfBanco")
+  const viewer = document.getElementById("viewerPdfBanco")
+
+  if (viewer) viewer.src = ""
+
+  if (pdfBancoAtual?.url) {
+    URL.revokeObjectURL(pdfBancoAtual.url)
+  }
+
+  pdfBancoAtual = null
+
+  if (modal) modal.style.display = "none"
+}
+
+function baixarPdfBancoAtual() {
+  if (!pdfBancoAtual) return
+
+  const link = document.createElement("a")
+  link.href = pdfBancoAtual.url
+  link.download = pdfBancoAtual.nome
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+}
+
+
+
+window.addEventListener("click", function(event) {
+  const modalPdf = document.getElementById("modalPdfBanco")
+  if (event.target === modalPdf) fecharPdfBanco()
+})
+
+document.addEventListener("keydown", function(event) {
+  if (event.key === "Escape") fecharPdfBanco()
+})
 
 preencherUsuario()
 carregarDados()

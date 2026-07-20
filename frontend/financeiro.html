@@ -140,6 +140,31 @@
     <button onclick="salvarEdicao()">Salvar edição</button>
   </div>
 </div>
+
+<div id="modalPdfFinanceiro" class="financeiro-modal financeiro-pdf-overlay">
+  <div class="financeiro-modal-content financeiro-pdf-modal">
+    <div class="financeiro-pdf-header">
+      <h3 id="tituloPdfFinanceiro">Visualizar PDF</h3>
+      <button type="button" class="financeiro-pdf-close" onclick="fecharPdfFinanceiro()">✕</button>
+    </div>
+
+    <iframe
+      id="viewerPdfFinanceiro"
+      class="financeiro-pdf-viewer"
+      title="Visualizador de PDF"
+    ></iframe>
+
+    <div class="financeiro-pdf-actions">
+      <button type="button" class="financeiro-pdf-download" onclick="baixarPdfFinanceiroAtual()">
+        Baixar PDF
+      </button>
+      <button type="button" class="financeiro-pdf-cancel" onclick="fecharPdfFinanceiro()">
+        Fechar
+      </button>
+    </div>
+  </div>
+</div>
+
 <script src="js/api.js"></script>
 <script src="js/financeiro.js"></script>
 

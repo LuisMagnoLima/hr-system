@@ -373,3 +373,71 @@ body {
   border-radius: 10px;
   margin-bottom: 14px;
 }
+
+/* Visualizador interno de PDF */
+.bd-pdf-modal {
+  width: 1100px;
+  max-width: calc(100% - 24px);
+  height: 90vh;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bd-pdf-viewer {
+  width: 100%;
+  flex: 1;
+  min-height: 500px;
+  border: 1px solid #d9dce5;
+  border-radius: 12px;
+  background: #f5f6fa;
+}
+
+.bd-pdf-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.bd-btn-download,
+.bd-btn-fechar-pdf {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 16px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.bd-btn-download {
+  background: #4f6df5;
+  color: white;
+}
+
+.bd-btn-fechar-pdf {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+@media (max-width: 650px) {
+  .bd-pdf-modal {
+    width: calc(100% - 16px);
+    height: calc(100vh - 16px);
+    max-height: calc(100vh - 16px);
+    padding: 14px;
+  }
+
+  .bd-pdf-viewer {
+    min-height: 350px;
+  }
+
+  .bd-pdf-actions {
+    flex-direction: column;
+  }
+
+  .bd-btn-download,
+  .bd-btn-fechar-pdf {
+    width: 100%;
+  }
+}
