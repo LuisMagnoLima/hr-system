@@ -56,6 +56,29 @@ function atualizarTitulo() {
   if (titulo) titulo.innerText = `Gerenciador - ${dep}`
 }
 
+function atualizarBotoesGerenciador() {
+  const departamento = getDepartamentoAtual().toUpperCase()
+  const btnRegional = document.getElementById("btnRegional")
+
+  if (!btnRegional) return
+
+  if (departamento === "AGERP") {
+    btnRegional.style.display = "inline-flex"
+  } else {
+    btnRegional.style.display = "none"
+
+    if (filtroAtual === "regional") {
+      filtroAtual = "ativo"
+
+      document.querySelectorAll(".ger-tab").forEach(btn => {
+        btn.classList.remove("active")
+      })
+
+      document.querySelector(".ger-tab")?.classList.add("active")
+    }
+  }
+}
+
 function atualizarStatusVisual() {
   const tipoUpper = filtroAtual.toUpperCase()
 
@@ -539,6 +562,7 @@ document.addEventListener("keydown", function(e) {
 
 aplicarTemaModulo()
 atualizarTitulo()
+atualizarBotoesGerenciador()
 atualizarStatusVisual()
 aplicarCorBotao()
 loadDocs()
