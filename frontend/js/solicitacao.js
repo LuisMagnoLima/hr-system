@@ -93,16 +93,12 @@ async function enviarSolicitacao() {
   }
 
   const numeroOficio = document.getElementById("numeroOficio").value.trim()
-  const nomeDocumento = document.getElementById("nomeDocumento").value.trim()
-  const interessado = document.getElementById("interessado").value.trim()
   const secretaria = document.getElementById("secretaria").value.trim()
-  const setorDestino = document.getElementById("setorDestino").value.trim()
   const destinatario = document.getElementById("destinatario").value
-  const observacao = document.getElementById("observacao").value.trim()
   const botao = document.getElementById("btnEnviar")
 
-  if (!numeroOficio || !nomeDocumento || !secretaria || !setorDestino || !destinatario) {
-    alert("Preencha o número do ofício, nome do documento, secretaria, setor e destinatário")
+  if (!numeroOficio || !secretaria || !destinatario) {
+    alert("Preencha o número do ofício, secretaria e destinatário")
     return
   }
 
@@ -115,12 +111,12 @@ async function enviarSolicitacao() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         numero_oficio: numeroOficio,
-        nome_documento: nomeDocumento,
-        interessado,
+        nome_documento: numeroOficio,
+        interessado: "",
         secretaria,
-        setor_destino: setorDestino,
+        setor_destino: "",
         destinatario,
-        observacao,
+        observacao: "",
         modulo: getModuloAtual()
       })
     })
@@ -130,11 +126,7 @@ async function enviarSolicitacao() {
     )
 
     document.getElementById("numeroOficio").value = ""
-    document.getElementById("nomeDocumento").value = ""
-    document.getElementById("interessado").value = ""
-    document.getElementById("setorDestino").value = ""
     document.getElementById("destinatario").value = ""
-    document.getElementById("observacao").value = ""
     document.getElementById("numeroOficio").focus()
   } catch (err) {
     alert(err.message || "Erro de conexão com o servidor")
