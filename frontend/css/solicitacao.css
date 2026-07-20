@@ -1,27 +1,29 @@
 :root {
-  --cor-modulo: #4f6df5;
-  --cor-modulo-clara: #edf2ff;
+  --primary: #4f6df5;
+  --text: #1f2a44;
+  --muted: #667085;
+  --background: #f5f6fa;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
   font-family: Arial, sans-serif;
-  background: #f5f6fa;
-  color: #1f2a44;
+  background: var(--background);
+  color: var(--text);
 }
 
 .sol-page {
   min-height: 100vh;
   padding: 30px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
 }
 
 .sol-container {
-  max-width: 760px;
-  margin: 0 auto;
+  width: min(760px, 100%);
   background: #fff;
   border-radius: 18px;
   padding: 28px;
@@ -30,115 +32,74 @@ body {
 
 .sol-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 18px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
+  margin-bottom: 26px;
 }
 
 .sol-header h1 {
   margin: 0;
   font-size: 28px;
-  color: #1f2a44;
 }
 
 .sol-header p {
   margin: 8px 0 0;
-  color: #6a7388;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.sol-back-btn,
+.sol-send-btn {
+  border: 0;
+  border-radius: 10px;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .sol-back-btn {
-  background: var(--cor-modulo);
-  color: #fff;
-  border: none;
-  border-radius: 10px;
   padding: 10px 14px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.sol-tabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 18px;
-  flex-wrap: wrap;
-}
-
-.sol-tab {
-  border: none;
-  background: #f0f2f5;
-  color: #555;
-  border-radius: 999px;
-  padding: 10px 18px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-.sol-tab.active {
-  background: var(--cor-modulo);
-  color: white;
-}
-
-.sol-info-box {
-  background: #f6f8fc;
-  border: 1px solid #e6eaf5;
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 20px;
-  color: #666;
-}
-
-.sol-info-box strong {
-  color: var(--cor-modulo);
+  white-space: nowrap;
 }
 
 .sol-label {
   display: block;
-  margin: 14px 0 8px;
-  font-weight: bold;
-  color: #1f2a44;
+  margin-bottom: 8px;
+  font-weight: 700;
 }
 
 .sol-input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 13px 14px;
+  border: 1px solid #d0d5dd;
   border-radius: 10px;
-  border: 1px solid #ddd;
+  font-size: 15px;
   outline: none;
-  font-size: 14px;
-  background: #fff;
 }
 
-.sol-upload-box {
-  border: 2px dashed #d7dce8;
-  border-radius: 12px;
-  padding: 24px;
-  text-align: center;
-  margin-top: 8px;
-  margin-bottom: 20px;
-  background: #fafbff;
-}
-
-.sol-upload-box input {
-  width: 100%;
+.sol-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(79, 109, 245, 0.14);
 }
 
 .sol-send-btn {
   width: 100%;
+  margin-top: 18px;
   padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: var(--cor-modulo);
-  color: white;
   font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
 }
 
 .sol-send-btn:hover,
-.sol-back-btn:hover {
-  opacity: 0.92;
+.sol-back-btn:hover { opacity: 0.92; }
+
+.sol-send-btn:disabled {
+  opacity: 0.65;
+  cursor: wait;
 }
-.sol-warning { border-left: 5px solid #f4c542; background: #fff9df; color: #5f4b00; }
-.sol-textarea { min-height: 100px; resize: vertical; font-family: Arial, sans-serif; }
-.sol-send-btn:disabled { opacity: .65; cursor: wait; }
+
+@media (max-width: 600px) {
+  .sol-page { padding: 14px; }
+  .sol-container { padding: 20px; }
+  .sol-header { flex-direction: column; }
+}

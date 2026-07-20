@@ -3,43 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Protocolo de Recebimento</title>
+  <title>Registro de Ofício</title>
   <link rel="stylesheet" href="css/solicitacao.css">
 </head>
 <body>
-<div class="sol-page">
-  <div class="sol-container">
-    <div class="sol-header">
-      <button id="btnVoltar" class="sol-back-btn" onclick="voltar()">← Voltar</button>
-      <div>
-        <h1 id="solTitulo">Protocolo de Recebimento</h1>
-        <p id="solSubtitulo">Registre a entrega física do ofício ao setor responsável. Nenhum arquivo será enviado.</p>
-      </div>
-    </div>
+  <main class="sol-page">
+    <section class="sol-container">
+      <header class="sol-header">
+        <button class="sol-back-btn" type="button" onclick="voltar()">← Voltar</button>
+        <div>
+          <h1>Registro de Ofício</h1>
+          <p>
+            Informe apenas o número do ofício. As demais informações
+            permanecerão no documento físico.
+          </p>
+        </div>
+      </header>
 
-    <div class="sol-info-box sol-warning">
-      O registro será enviado com a situação <strong>PENDENTE DE ACEITE</strong> até o destinatário clicar em <strong>Confirmar Recebimento</strong>.
-    </div>
+      <form id="formSolicitacao" novalidate>
+        <label class="sol-label" for="numeroOficio">Número do ofício *</label>
+        <input
+          type="text"
+          id="numeroOficio"
+          class="sol-input"
+          placeholder="Ex.: 123/2026"
+          maxlength="100"
+          autocomplete="off"
+          required
+        >
 
-    <label class="sol-label" for="numeroOficio">Número do ofício *</label>
-    <input type="text" id="numeroOficio" class="sol-input" placeholder="Ex.: 123/2026">
+        <button id="btnEnviar" class="sol-send-btn" type="submit">
+          Gerar protocolo
+        </button>
+      </form>
+    </section>
+  </main>
 
-    <label class="sol-label" for="secretaria">Secretaria *</label>
-    <select id="secretaria" class="sol-input">
-      <option value="">Selecione uma secretaria</option>
-    </select>
-
-    <label class="sol-label" for="destinatario">Usuário que confirmará o recebimento *</label>
-    <select id="destinatario" class="sol-input">
-      <option value="">Selecione um usuário</option>
-    </select>
-
-    <button id="btnEnviar" class="sol-send-btn" onclick="enviarSolicitacao()">
-      Gerar protocolo e enviar para aceite
-    </button>
-  </div>
-</div>
-<script src="js/api.js"></script>
-<script src="js/solicitacao.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/solicitacao.js"></script>
 </body>
 </html>

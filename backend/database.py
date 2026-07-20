@@ -83,9 +83,9 @@ def criar_indices() -> None:
         ],
         "solicitacoes": [
             ([("protocolo", ASCENDING)], {"unique": True, "sparse": True}),
-            ([("destinatario", ASCENDING), ("status", ASCENDING), ("criado_em", DESCENDING)], {}),
-            ([("status", ASCENDING), ("criado_em", DESCENDING)], {}),
             ([("numero_oficio", ASCENDING)], {}),
+            ([("remetente", ASCENDING), ("criado_em", DESCENDING)], {}),
+            ([("criado_em", DESCENDING)], {}),
         ],
         "auditoria": [
             ([("data", DESCENDING)], {}),
