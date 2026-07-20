@@ -79,7 +79,7 @@ def create_app():
     limiter.limit("10 per minute")(app.view_functions["auth.login"])
 
     verificar_conexao()
-    criar_indices()
+    #criar_indices()
     preparar_secretarias()
 
     @app.get("/")

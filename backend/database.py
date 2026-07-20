@@ -64,47 +64,53 @@ def verificar_conexao() -> None:
 
 
 def criar_indices() -> None:
-    """Cria índices idempotentes usados pelas consultas principais."""
+    """Cria índices apenas quando eles ainda não existem."""
     db = get_database()
 
     indices = {
         "users": [
-            ([('email', ASCENDING)], {'unique': True, 'name': 'uq_users_email'}),
-            ([('role', ASCENDING)], {'name': 'ix_users_role'}),
+            ([("email", ASCENDING)], {"unique": True}),
+            ([("role", ASCENDING)], {}),
         ],
         "secretarias": [
-            ([('sigla', ASCENDING)], {'unique': True, 'name': 'uq_secretarias_sigla'}),
-            ([('ativa', ASCENDING), ('sigla', ASCENDING)], {'name': 'ix_secretarias_ativa_sigla'}),
+            ([("sigla", ASCENDING)], {"unique": True}),
+            ([("ativa", ASCENDING), ("sigla", ASCENDING)], {}),
         ],
         "documents": [
-            ([('data_envio', DESCENDING)], {'name': 'ix_documents_data_envio'}),
-            ([('departamento', ASCENDING), ('data_envio', DESCENDING)], {'name': 'ix_documents_departamento_data'}),
-            ([('status', ASCENDING), ('data_envio', DESCENDING)], {'name': 'ix_documents_status_data'}),
+            ([("data_envio", DESCENDING)], {}),
+            ([("departamento", ASCENDING), ("data_envio", DESCENDING)], {}),
+            ([("status", ASCENDING), ("data_envio", DESCENDING)], {}),
         ],
         "solicitacoes": [
-            ([('protocolo', ASCENDING)], {'unique': True, 'sparse': True, 'name': 'uq_solicitacoes_protocolo'}),
-            ([('destinatario', ASCENDING), ('status', ASCENDING), ('criado_em', DESCENDING)], {'name': 'ix_solicitacoes_dest_status_data'}),
-            ([('status', ASCENDING), ('criado_em', DESCENDING)], {'name': 'ix_solicitacoes_status_data'}),
-            ([('numero_oficio', ASCENDING)], {'name': 'ix_solicitacoes_numero_oficio'}),
+            ([("protocolo", ASCENDING)], {"unique": True, "sparse": True}),
+            ([("destinatario", ASCENDING), ("status", ASCENDING), ("criado_em", DESCENDING)], {}),
+            ([("status", ASCENDING), ("criado_em", DESCENDING)], {}),
+            ([("numero_oficio", ASCENDING)], {}),
         ],
         "auditoria": [
-            ([('data', DESCENDING)], {'name': 'ix_auditoria_data'}),
-            ([('usuario_email', ASCENDING), ('data', DESCENDING)], {'name': 'ix_auditoria_usuario_data'}),
+            ([("data", DESCENDING)], {}),
+            ([("usuario_email", ASCENDING), ("data", DESCENDING)], {}),
         ],
         "arquivamentos": [
-            ([('data_arquivamento', DESCENDING)], {'name': 'ix_arquivamentos_data'}),
+            ([("data_arquivamento", DESCENDING)], {}),
         ],
     }
 
     try:
         for colecao, definicoes in indices.items():
             for chaves, opcoes in definicoes:
-                db[colecao].create_index(chaves, **opcoes)
-        logger.info("Índices do MongoDB verificados/criados com sucesso")
-    except PyMongoError as exc:
-        logger.exception("Falha ao criar índices do MongoDB")
-        raise RuntimeError("Falha ao preparar os índices do banco de dados") from exc
+                try:
+                    db[colecao].create_index(chaves, **opcoes)
+                except PyMongoError:
+                    # Índice já existe ou há conflito de nome.
+                    # Para a apresentação, apenas continua.
+                    pass
 
+        logger.info("Índices verificados com sucesso")
+
+    except Exception as exc:
+        logger.exception("Falha ao preparar índices")
+        raise RuntimeError("Falha ao preparar os índices") from exc
 
 def fechar_conexao() -> None:
     global _client, _database

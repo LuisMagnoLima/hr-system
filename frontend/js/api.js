@@ -27,8 +27,8 @@ async function apiFetch(url, options = {}) {
   if (response.status === 401) {
     currentUserCache = null
     sessionStorage.removeItem("hr_user")
-    if (!window.location.pathname.endsWith("login.html")) {
-      window.location.replace("login.html")
+    if (!window.location.pathname.endsWith("/login.html")) {
+    window.location.replace("/login.html")
     }
     throw new Error(data?.error || "Sessão expirada")
   }
