@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: sigmaturing
+    name: inagro-protocolos
     runtime: python
     plan: free
     autoDeploy: true
