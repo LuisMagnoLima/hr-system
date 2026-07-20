@@ -17,7 +17,7 @@ services:
       - key: MONGO_URI
         sync: false
       - key: DB_NAME
-        value: hr_system
+        value: hr-system
       - key: MAX_FILE_SIZE
         value: "104857600"
       - key: UPLOAD_FOLDER
