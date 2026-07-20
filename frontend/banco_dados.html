@@ -19,17 +19,11 @@
       <div class="bd-topo-direita">
         <button class="bd-voltar" onclick="voltar()">← Voltar</button>
         <span id="usuarioLogado" class="bd-usuario">NOME DO USUÁRIO</span>
-       <button class="bd-btn-topo bd-btn-dashboard" onclick="window.location.href='dashboard.html'">
-          📊 Dashboard
-      </button>
-
-        <button class="bd-btn-topo bd-btn-auditoria" onclick="window.location.href='auditoria.html'">
-           📜 Auditoria
+        <button class="bd-btn-dashboard" onclick="window.location.href='dashboard.html'">
+        📊 Ver Dashboard
         </button>
-
-        <button class="bd-btn-topo bd-btn-arquivados" onclick="abrirArquivados()">
-           📦 Arquivados
-        </button>
+        <button onclick="window.location.href='auditoria.html'">Ver Auditoria</button>
+        <button class="bd-btn-arquivados" onclick="abrirArquivados()">📦 Arquivados</button>
       </div>
     </div>
 
@@ -87,51 +81,37 @@
 </div>
 <div id="modalArquivados" class="bd-modal">
   <div class="bd-modal-content bd-modal-large">
-
     <div class="bd-modal-header">
+      <h2>📦 Documentos Arquivados</h2>
+
       <div>
-        <h2>📦 Documentos Arquivados</h2>
-        <p>Documentos movidos para arquivamento automático</p>
-      </div>
-
-      <div class="bd-modal-actions">
-        <span id="totalArquivados">0 documentos</span>
-
-        <button class="bd-btn-atualizar-arq" onclick="carregarArquivados()">🔄</button>
-        <button class="bd-btn-fechar-arq" onclick="fecharArquivados()">✕</button>
+        <button class="bd-btn-atualizar-arq" onclick="carregarArquivados()">🔄 Atualizar</button>
+        <button onclick="fecharArquivados()">✕</button>
       </div>
     </div>
 
-    <div class="bd-modal-body">
-      <input
-        id="buscaArquivados"
-        class="bd-input"
-        placeholder="🔍 Buscar por nome, secretaria ou módulo..."
-        oninput="renderArquivados()"
-      >
+    <input
+      id="buscaArquivados"
+      class="bd-input"
+      placeholder="Buscar por nome, secretaria ou módulo..."
+      oninput="renderArquivados()"
+    >
 
-      <div class="bd-table-wrap">
-        <table class="bd-table">
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Secretaria</th>
-              <th>Módulo</th>
-              <th>Arquivado em</th>
-              <th>Expira em</th>
-              <th>Ação</th>
-            </tr>
-          </thead>
-          <tbody id="tabelaArquivados"></tbody>
-        </table>
-      </div>
+    <div class="bd-table-wrap">
+      <table class="bd-table">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Secretaria</th>
+            <th>Módulo</th>
+            <th>Arquivado em</th>
+            <th>Expira em</th>
+            <th>Ação</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaArquivados"></tbody>
+      </table>
     </div>
-
-    <div class="bd-modal-footer">
-      Total de documentos arquivados:
-      <strong id="rodapeArquivados">0</strong>
-    </div>
-
   </div>
 </div>
 <script src="js/api.js"></script>

@@ -1,16 +1,14 @@
 from flask import Blueprint, request, jsonify
-from pymongo import MongoClient
 from bson import ObjectId
+from database import get_database
 
-from config import MONGO_URI, DB_NAME
 from utils.auth_utils import hash_password
 from utils.permission_utils import role_required
 from utils.audit_utils import registrar_auditoria
 
 users_routes = Blueprint("users", __name__)
 
-client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
+db = get_database()
 
 
 @users_routes.route("/admin/users", methods=["GET"])

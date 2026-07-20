@@ -1,5 +1,5 @@
 function getPayload() {
-  const token = localStorage.getItem("token")
+  const token = sessionStorage.getItem("hr_user")
 
   if (!token) {
     window.location.href = "login.html"
@@ -7,9 +7,9 @@ function getPayload() {
   }
 
   try {
-    return JSON.parse(atob(token.split(".")[1]))
+    return JSON.parse(token)
   } catch {
-    localStorage.clear()
+    sessionStorage.clear()
     window.location.href = "login.html"
     return null
   }
@@ -39,8 +39,7 @@ function irFinanceiro() {
 }
 
 function logout() {
-  localStorage.clear()
-  window.location.href = "login.html"
+  logoutSistema()
 }
 
 function formatarAcao(acao) {

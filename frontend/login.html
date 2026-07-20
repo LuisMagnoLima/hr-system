@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -11,19 +12,49 @@
   <h1>Sistema de RH</h1>
   <p class="subtitle">Entre com suas credenciais</p>
 
-  <div class="input-group">
-    <span>📧</span>
-    <input type="text" id="email" placeholder="Email address">
-  </div>
+  <form id="loginForm" novalidate>
+    <div class="input-group">
+      <span aria-hidden="true">📧</span>
+      <input
+        type="email"
+        id="email"
+        name="email"
+        placeholder="E-mail"
+        autocomplete="username"
+        required
+        autofocus
+      >
+    </div>
 
-  <div class="input-group">
-    <span>🔒</span>
-    <input type="password" id="senha" placeholder="Password">
-  </div>
+    <div class="input-group password-group">
+      <span aria-hidden="true">🔒</span>
+      <input
+        type="password"
+        id="senha"
+        name="senha"
+        placeholder="Senha"
+        autocomplete="current-password"
+        required
+      >
+      <button
+        type="button"
+        id="togglePassword"
+        class="toggle-password"
+        aria-label="Mostrar senha"
+        title="Mostrar senha"
+      >
+        Mostrar
+      </button>
+    </div>
 
-  <button class="login-btn" onclick="login()">Entrar</button>
+    <p id="loginMessage" class="login-message" role="alert" aria-live="polite"></p>
 
+    <button id="loginButton" class="login-btn" type="submit">
+      Entrar
+    </button>
+  </form>
 </div>
+
 <script src="js/api.js"></script>
 <script src="js/auth.js"></script>
 </body>

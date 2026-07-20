@@ -1,13 +1,12 @@
 import os
 import shutil
 from datetime import datetime, timedelta
-from pymongo import MongoClient
 import pytz
 from utils.audit_utils import registrar_auditoria
-from config import MONGO_URI, DB_NAME, UPLOAD_FOLDER
+from config import UPLOAD_FOLDER
+from database import get_database
 
-client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
+db = get_database()
 
 tz = pytz.timezone("America/Fortaleza")
 

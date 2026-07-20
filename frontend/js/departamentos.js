@@ -1,4 +1,5 @@
-const departamentos = ["AGERP", "ITERMA", "SAF", "SEDES", "SEGOV"]
+let departamentos = []
+
 
 function getModuloAtual() {
   return localStorage.getItem("modulo") || "notas"
@@ -29,11 +30,11 @@ function aplicarTemaModulo() {
 }
 
 function getUserEmail() {
-  const token = localStorage.getItem("token")
+  const token = sessionStorage.getItem("hr_user")
   if (!token) return "Desconhecido"
 
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]))
+    const payload = JSON.parse(token)
     return payload.email || "Desconhecido"
   } catch {
     return "Desconhecido"
@@ -49,37 +50,35 @@ function preencherCabecalho() {
   document.getElementById("userEmail").innerText = getUserEmail()
 }
 
+async function carregarDepartamentos() {
+  try {
+    departamentos = await apiFetch("/secretarias")
+    renderDepartamentos()
+  } catch (erro) {
+    alert(erro.message)
+  }
+}
+
 function renderDepartamentos() {
   const container = document.getElementById("deps")
   container.innerHTML = ""
 
   departamentos.forEach(dep => {
     container.innerHTML += `
-      <div class="deps-card" onclick="selectDep('${dep}')">
-        <h3>${dep}</h3>
-        <p>Secretaria ${dep}</p>
+      <div class="deps-card" onclick="selectDep('${dep.sigla}')">
+        <h3>${dep.sigla}</h3>
+        <p>${dep.nome}</p>
       </div>
     `
   })
 }
 
 function getPayload() {
-  const token = localStorage.getItem("token")
+  const token = sessionStorage.getItem("hr_user")
   if (!token) return null
 
   try {
-    return JSON.parse(atob(token.split(".")[1]))
-  } catch {
-    return null
-  }
-}
-
-function getPayload() {
-  const token = localStorage.getItem("token")
-  if (!token) return null
-
-  try {
-    return JSON.parse(atob(token.split(".")[1]))
+    return JSON.parse(token)
   } catch {
     return null
   }
@@ -103,4 +102,4 @@ function voltarMenu() {
 
 aplicarTemaModulo()
 preencherCabecalho()
-renderDepartamentos()
+carregarDepartamentos()

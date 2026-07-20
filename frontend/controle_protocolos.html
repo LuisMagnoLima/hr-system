@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Protocolos</title>
+  <link rel="stylesheet" href="css/controle_protocolos.css">
+</head>
+<body>
+<main class="cp-page">
+  <section class="cp-container">
+    <header class="cp-header">
+      <div>
+        <button class="cp-back" onclick="window.location.href='menu.html'">← Voltar</button>
+        <h1>Controle de Protocolos</h1>
+        <p>Painel da recepção para acompanhar os ofícios entregues aos setores.</p>
+      </div>
+      <button class="cp-export" id="btnExportar">Exportar CSV</button>
+    </header>
+
+    <section class="cp-cards">
+      <article class="cp-card cp-total"><strong id="cardTotal">0</strong><span>Total de protocolos</span></article>
+      <article class="cp-card cp-pendente"><strong id="cardPendentes">0</strong><span>PENDENTES DE ACEITE</span><small>Aguardando o setor confirmar recebimento</small></article>
+      <article class="cp-card cp-confirmado"><strong id="cardConfirmados">0</strong><span>ACEITES CONFIRMADOS</span></article>
+      <article class="cp-card cp-atrasado"><strong id="cardAtrasados">0</strong><span>PENDENTES HÁ 2 DIAS OU MAIS</span></article>
+      <article class="cp-card cp-recusado"><strong id="cardRecusados">0</strong><span>RECUSADOS PELO DESTINATÁRIO</span></article>
+    </section>
+
+    <section class="cp-filtros">
+      <input id="fProtocolo" placeholder="Protocolo">
+      <input id="fOficio" placeholder="Número do ofício">
+      <input id="fInteressado" placeholder="Interessado">
+      <input id="fSecretaria" placeholder="Secretaria">
+      <input id="fSetor" placeholder="Setor">
+      <input id="fAceitoPor" placeholder="Aceito por">
+      <select id="fSituacao">
+        <option value="">Todas as situações</option>
+        <option value="pendente_aceite">Pendente de Aceite</option>
+        <option value="aceite_confirmado">Aceite Confirmado</option>
+        <option value="cancelado">Cancelado</option>
+        <option value="recusado_destinatario">Recusado pelo Destinatário</option>
+      </select>
+      <label>De <input id="fDataInicial" type="date"></label>
+      <label>Até <input id="fDataFinal" type="date"></label>
+      <div class="cp-filter-actions">
+        <button id="btnFiltrar">Aplicar filtros</button>
+        <button id="btnLimpar" class="secondary">Limpar</button>
+      </div>
+    </section>
+
+    <div id="cpMensagem" class="cp-message">Carregando protocolos...</div>
+    <div class="cp-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Protocolo</th><th>Ofício</th><th>Documento / interessado</th><th>Secretaria / setor</th>
+            <th>Destino</th><th>Situação</th><th>Datas</th><th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="cpTabela"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<div id="cpModal" class="cp-modal" hidden>
+  <div class="cp-modal-card">
+    <button class="cp-close" id="btnFecharModal">×</button>
+    <div id="cpDetalhes"></div>
+  </div>
+</div>
+
+<div id="cpEditModal" class="cp-modal" hidden>
+  <div class="cp-modal-card">
+    <button class="cp-close" id="btnFecharEditModal">×</button>
+    <h2>Editar protocolo</h2>
+
+    <form id="cpEditForm" class="cp-edit-form">
+      <input type="hidden" id="editId">
+
+      <label>
+        Número do ofício
+        <input id="editNumeroOficio" required>
+      </label>
+
+      <label>
+        Nome do documento
+        <input id="editNomeDocumento" required>
+      </label>
+
+      <label>
+        Interessado
+        <input id="editInteressado">
+      </label>
+
+      <label>
+        Secretaria
+        <input id="editSecretaria" required>
+      </label>
+
+      <label>
+        Setor de destino
+        <input id="editSetor" required>
+      </label>
+
+      <label>
+        E-mail do destinatário
+        <input id="editDestinatario" type="email" required>
+      </label>
+
+      <label class="cp-full">
+        Observação
+        <textarea id="editObservacao" rows="4"></textarea>
+      </label>
+
+      <div class="cp-edit-actions cp-full">
+        <button type="button" class="secondary" id="btnCancelarEdicao">Voltar</button>
+        <button type="submit">Salvar alterações</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<div id="cpReencaminharModal" class="cp-modal" hidden>
+  <div class="cp-modal-card">
+    <button class="cp-close" id="btnFecharReencaminharModal">×</button>
+    <h2>Corrigir e reencaminhar</h2>
+    <p id="reencaminharMotivo" class="cp-alerta"></p>
+    <form id="cpReencaminharForm" class="cp-edit-form">
+      <input type="hidden" id="reencaminharId">
+      <label>Secretaria<input id="reencaminharSecretaria" required></label>
+      <label>Setor de destino<input id="reencaminharSetor" required></label>
+      <label class="cp-full">E-mail do novo destinatário<input id="reencaminharDestinatario" type="email" required></label>
+      <label class="cp-full">Observação<textarea id="reencaminharObservacao" rows="4"></textarea></label>
+      <div class="cp-edit-actions cp-full"><button type="button" class="secondary" id="btnCancelarReencaminhamento">Voltar</button><button type="submit">Reencaminhar protocolo</button></div>
+    </form>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script src="js/controle_protocolos.js"></script>
+</body>
+</html>

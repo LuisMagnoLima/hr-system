@@ -440,3 +440,135 @@
   opacity: 0.65;
   cursor: not-allowed;
 }
+
+.ger-filters-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ger-select {
+  min-width: 210px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #fff;
+  font-size: 14px;
+}
+
+.ger-protocolo {
+  margin: 6px 0 0;
+  color: var(--cor-modulo);
+  font-weight: 700;
+}
+
+.ger-badge-status {
+  margin-left: 6px;
+  background: #eef1f6;
+  color: #43506a;
+}
+
+.ger-detail-btn {
+  border: 1px solid var(--cor-modulo);
+  background: #fff;
+  color: var(--cor-modulo);
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.ger-modal-large {
+  max-width: 780px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.ger-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.ger-detail-item {
+  padding: 13px;
+  border: 1px solid #e6eaf1;
+  border-radius: 10px;
+  background: #f8f9fc;
+}
+
+.ger-detail-item small {
+  display: block;
+  color: #7a8497;
+  margin-bottom: 4px;
+}
+
+.ger-workflow-box {
+  border: 1px solid #e3e7ef;
+  background: #fafbfe;
+  border-radius: 14px;
+  padding: 18px;
+  margin: 18px 0;
+}
+
+.ger-workflow-box h3,
+.ger-history-section h3 {
+  margin-top: 0;
+  color: #1f2a44;
+}
+
+.ger-workflow-form {
+  display: grid;
+  gap: 10px;
+}
+
+.ger-workflow-form textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.ger-timeline {
+  border-left: 3px solid var(--cor-modulo-clara);
+  padding-left: 20px;
+  margin-left: 8px;
+}
+
+.ger-timeline-item {
+  position: relative;
+  padding: 0 0 20px 4px;
+}
+
+.ger-timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -31px;
+  top: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--cor-modulo);
+  border: 3px solid white;
+  box-shadow: 0 0 0 1px var(--cor-modulo);
+}
+
+.ger-timeline-item strong {
+  color: #1f2a44;
+}
+
+.ger-timeline-meta {
+  color: #7a8497;
+  font-size: 12px;
+  margin: 4px 0;
+}
+
+.ger-timeline-note {
+  color: #555;
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 650px) {
+  .ger-detail-grid { grid-template-columns: 1fr; }
+  .ger-modal-content { margin: 12px; }
+}

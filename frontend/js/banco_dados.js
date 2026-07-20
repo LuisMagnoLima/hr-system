@@ -4,14 +4,14 @@ let paginaAtual = 1
 const itensPorPagina = 8
 
 function getPayload() {
-  const token = localStorage.getItem("token")
+  const token = sessionStorage.getItem("hr_user")
   if (!token) {
     window.location.href = "login.html"
     return null
   }
 
   try {
-    return JSON.parse(atob(token.split(".")[1]))
+    return JSON.parse(token)
   } catch (e) {
     window.location.href = "login.html"
     return null
@@ -247,12 +247,6 @@ function renderArquivados() {
     return texto.includes(busca)
   })
 
-  document.getElementById("totalArquivados").innerText =
-  `${filtrados.length} documento(s)`
-
-  document.getElementById("rodapeArquivados").innerText =
-  filtrados.length
-
   if (filtrados.length === 0) {
     tbody.innerHTML = `
       <tr>
@@ -292,28 +286,10 @@ function formatarDataArquivamento(doc) {
 function calcularExpiraEm(doc) {
   if (!doc.data_arquivamento) return "-"
 
-  const dataArquivamento = new Date(doc.data_arquivamento)
-  const expira = new Date(dataArquivamento)
-  expira.setMonth(expira.getMonth() + 6)
+  const data = new Date(doc.data_arquivamento)
+  data.setMonth(data.getMonth() + 6)
 
-  const hoje = new Date()
-  const diffMs = expira - hoje
-  const diasRestantes = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-
-  let classe = "expira-verde"
-  let texto = `${diasRestantes} dias`
-
-  if (diasRestantes <= 30) {
-    classe = "expira-vermelho"
-  } else if (diasRestantes <= 120) {
-    classe = "expira-amarelo"
-  }
-
-  return `
-    <span class="badge-expira ${classe}">
-      ${expira.toLocaleDateString("pt-BR")} · ${texto}
-    </span>
-  `
+  return data.toLocaleDateString("pt-BR")
 }
 
 async function restaurarArquivamento(id) {

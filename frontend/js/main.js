@@ -1,5 +1,5 @@
 function getPayload() {
-  const token = localStorage.getItem("token")
+  const token = sessionStorage.getItem("hr_user")
 
   if (!token) {
     window.location = "login.html"
@@ -7,10 +7,10 @@ function getPayload() {
   }
 
   try {
-    return JSON.parse(atob(token.split('.')[1]))
+    return JSON.parse(token)
   } catch (e) {
     console.error("Token inválido")
-    localStorage.removeItem("token")
+    sessionStorage.removeItem("hr_user")
     window.location = "login.html"
     return null
   }

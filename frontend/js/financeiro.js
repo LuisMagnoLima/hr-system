@@ -13,9 +13,9 @@ function setFiltroDepartamento() {
 }
 
 function getUser() {
-  const token = localStorage.getItem("token")
+  const token = sessionStorage.getItem("hr_user")
   if (!token) return "Desconhecido"
-  const payload = JSON.parse(atob(token.split(".")[1]))
+  const payload = JSON.parse(token)
   return payload.email
 }
 
@@ -139,8 +139,7 @@ const docsFiltrados = docsDoMes
 }
 
 function voltarLogin() {
-  localStorage.clear()
-  window.location.href = "login.html"
+  logoutSistema()
 }
 
 function proximoMes() {
@@ -297,13 +296,9 @@ function fecharModalEditar() {
 }
 
 async function baixarArquivo(filename) {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("hr_user");
 
-  const response = await fetch(`${API_URL}/files/${filename}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
+  const response = await fetch(`${API_URL}/files/${filename}`, { credentials: "include" });
 
   if (!response.ok) {
     const erro = await response.json().catch(() => ({}));
@@ -444,4 +439,27 @@ window.onclick = function(event) {
   if (event.target === modalEditar) fecharModalEditar()
 }
 
-carregarDados()
+async function carregarSecretariasFinanceiro() {
+  const secretarias = await apiFetch("/secretarias")
+  const selects = [
+    { id: "filtroDepartamento", manterTodas: true },
+    { id: "finDepartamento", manterTodas: false },
+    { id: "editDepartamento", manterTodas: false }
+  ]
+
+  selects.forEach(config => {
+    const select = document.getElementById(config.id)
+    if (!select) return
+    const valorAtual = select.value
+    select.innerHTML = config.manterTodas ? '<option value="">Todas as secretarias</option>' : ""
+    secretarias.forEach(secretaria => {
+      const option = document.createElement("option")
+      option.value = secretaria.sigla
+      option.textContent = `${secretaria.sigla} - ${secretaria.nome}`
+      select.appendChild(option)
+    })
+    if ([...select.options].some(option => option.value === valorAtual)) select.value = valorAtual
+  })
+}
+
+;(async () => { await carregarSecretariasFinanceiro(); await carregarDados() })()

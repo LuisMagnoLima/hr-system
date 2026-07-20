@@ -1,14 +1,12 @@
 from flask import Blueprint, jsonify
-from pymongo import MongoClient
 from datetime import datetime
+from database import get_database
 
-from config import MONGO_URI, DB_NAME
 from utils.permission_utils import role_required
 
 dashboard_routes = Blueprint("dashboard", __name__)
 
-client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
+db = get_database()
 
 
 def agrupar_por_campo(campo):

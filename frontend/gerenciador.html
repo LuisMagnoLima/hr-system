@@ -33,14 +33,24 @@
         type="text"
         id="busca"
         class="ger-search"
-        placeholder="PESQUISAR"
+        placeholder="Pesquisar por nome ou protocolo"
         oninput="loadDocs()"
       >
+      <select id="filtroStatus" class="ger-select" onchange="loadDocs()">
+        <option value="">Todos os status</option>
+        <option value="em_elaboracao">Em elaboração</option>
+        <option value="enviado">Enviado</option>
+        <option value="em_analise">Em análise</option>
+        <option value="aprovado">Aprovado</option>
+        <option value="rejeitado">Rejeitado</option>
+        <option value="arquivado">Arquivado</option>
+      </select>
     </div>
 
     <div class="ger-tabs">
       <button class="ger-tab active" onclick="setFiltro('ativo', this)">ATIVO</button>
       <button class="ger-tab" onclick="setFiltro('inativo', this)">INATIVO</button>
+      <button class="ger-tab" onclick="setFiltro('oficio', this)">OFÍCIO</button>
       <button class="ger-tab" onclick="setFiltro('regional', this)">REGIONAL</button>
     </div>
 
@@ -99,6 +109,34 @@
     <button class="ger-primary-btn ger-full-btn" onclick="upload()" id="btnAdicionarTipo">
       Adicionar em ATIVO
     </button>
+  </div>
+</div>
+<div id="modalDetalhes" class="ger-modal">
+  <div class="ger-modal-content ger-modal-large">
+    <div class="ger-modal-header">
+      <div>
+        <h2 id="detalheTitulo">Detalhes do documento</h2>
+        <p id="detalheProtocolo" class="ger-protocolo"></p>
+      </div>
+      <button class="ger-close-btn" onclick="fecharDetalhes()">✕</button>
+    </div>
+
+    <div id="detalheResumo" class="ger-detail-grid"></div>
+
+    <div class="ger-workflow-box">
+      <h3>Atualizar tramitação</h3>
+      <div class="ger-workflow-form">
+        <select id="novoStatus" class="ger-input"></select>
+        <input id="novoResponsavel" class="ger-input" placeholder="Responsável atual (e-mail)">
+        <textarea id="observacaoStatus" class="ger-input" rows="3" maxlength="1000" placeholder="Observação da movimentação"></textarea>
+        <button class="ger-primary-btn" onclick="salvarNovoStatus()">Salvar movimentação</button>
+      </div>
+    </div>
+
+    <div class="ger-history-section">
+      <h3>Histórico do documento</h3>
+      <div id="detalheHistorico" class="ger-timeline"></div>
+    </div>
   </div>
 </div>
 <script src="js/api.js"></script>

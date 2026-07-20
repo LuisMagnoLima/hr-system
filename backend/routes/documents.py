@@ -1,287 +1,390 @@
 from datetime import datetime
 import os
-from flask import Blueprint, request, jsonify, send_from_directory, current_app
-from pymongo import MongoClient
-from bson import ObjectId
-import pytz
-from config import MONGO_URI, DB_NAME
-from utils.file_utils import save_file
-from utils.audit_utils import registrar_auditoria
-from utils.permission_utils import login_required, role_required, permission_required
-doc_routes = Blueprint("documents", __name__)
+from database import get_database
 
-client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
+from bson import ObjectId
+from flask import Blueprint, current_app, jsonify, request, send_from_directory
+from pymongo import ReturnDocument
+import pytz
+
+from utils.audit_utils import registrar_auditoria
+from utils.file_utils import save_file
+from utils.permission_utils import login_required, permission_required
+
+
+doc_routes = Blueprint("documents", __name__)
+db = get_database()
+
+TIPOS_DOCUMENTO = {"ativo", "inativo", "oficio", "regional"}
+MODULOS_DOCUMENTO = {"notas", "diarias", "admissoes"}
+STATUS_DOCUMENTO = {
+    "em_elaboracao": "Em elaboração",
+    "enviado": "Enviado",
+    "em_analise": "Em análise",
+    "aprovado": "Aprovado",
+    "rejeitado": "Rejeitado",
+    "arquivado": "Arquivado",
+}
+TRANSICOES_STATUS = {
+    "em_elaboracao": {"enviado"},
+    "enviado": {"em_analise", "rejeitado"},
+    "em_analise": {"aprovado", "rejeitado", "enviado"},
+    "aprovado": {"arquivado", "em_analise"},
+    "rejeitado": {"em_elaboracao", "enviado"},
+    "arquivado": set(),
+}
+
 
 def agora_fortaleza():
-    tz = pytz.timezone("America/Fortaleza")
-    return datetime.now(tz)
+    return datetime.now(pytz.timezone("America/Fortaleza"))
+
+
+def gerar_protocolo(ano):
+    contador = db.counters.find_one_and_update(
+        {"_id": f"protocolo_{ano}"},
+        {"$inc": {"sequencia": 1}},
+        upsert=True,
+        return_document=ReturnDocument.AFTER,
+    )
+    return f"INA-{ano}-{contador['sequencia']:06d}"
+
+
+def evento_historico(status, usuario, acao, observacao="", data=None):
+    return {
+        "status": status,
+        "status_label": STATUS_DOCUMENTO.get(status, status),
+        "acao": acao,
+        "observacao": (observacao or "").strip(),
+        "usuario": usuario,
+        "data": data or agora_fortaleza(),
+    }
+
+
+def normalizar_documento_antigo(documento):
+    """Inclui os campos da Fase 2.2 em documentos criados em versões anteriores."""
+    alteracoes = {}
+    now = documento.get("data_envio") or agora_fortaleza()
+    status = documento.get("status") or (
+        "aprovado" if documento.get("confirmado_financeiro") else "em_elaboracao"
+    )
+
+    if not documento.get("protocolo"):
+        alteracoes["protocolo"] = gerar_protocolo(getattr(now, "year", agora_fortaleza().year))
+    if not documento.get("status"):
+        alteracoes["status"] = status
+    if not documento.get("responsavel_atual"):
+        alteracoes["responsavel_atual"] = documento.get("anexado_por")
+    if not documento.get("ultima_atualizacao"):
+        alteracoes["ultima_atualizacao"] = now
+    if not documento.get("historico"):
+        alteracoes["historico"] = [
+            evento_historico(
+                status,
+                documento.get("anexado_por", "sistema"),
+                "Documento incorporado ao fluxo documental",
+                data=now,
+            )
+        ]
+
+    if alteracoes:
+        db.documents.update_one({"_id": documento["_id"]}, {"$set": alteracoes})
+        documento.update(alteracoes)
+    return documento
+
+
+def serializar_documento(documento):
+    documento = dict(documento)
+    documento["_id"] = str(documento["_id"])
+    documento["status_label"] = STATUS_DOCUMENTO.get(
+        documento.get("status"), documento.get("status", "")
+    )
+    for item in documento.get("historico", []):
+        item["status_label"] = STATUS_DOCUMENTO.get(item.get("status"), item.get("status", ""))
+    return documento
+
+
+def validar_metadados_documento(origem):
+    nome = (origem.get("nome") or "").strip()
+    secretaria = (origem.get("departamento") or origem.get("secretaria") or "").strip().upper()
+    tipo = (origem.get("tipo") or "").strip().lower()
+    modulo = (origem.get("modulo") or "").strip().lower()
+
+    if not nome:
+        return None, "Nome do documento é obrigatório"
+    if tipo not in TIPOS_DOCUMENTO:
+        return None, "Tipo de documento inválido"
+    if modulo not in MODULOS_DOCUMENTO:
+        return None, "Módulo inválido"
+    if not db.secretarias.find_one({"sigla": secretaria, "ativa": True}):
+        return None, "Secretaria inexistente ou inativa"
+
+    return {
+        "nome": nome,
+        "embalagem": (origem.get("embalagem") or "").strip(),
+        "tipo": tipo,
+        "departamento": secretaria,
+        "secretaria": secretaria,
+        "modulo": modulo,
+    }, None
+
+
+def criar_documento(file, metadados, usuario, origem, confirmado=False):
+    now = agora_fortaleza()
+    filename, file_error = save_file(
+        file,
+        current_app.config["UPLOAD_FOLDER"],
+        metadados["departamento"],
+        now.year,
+        now.month,
+    )
+    if not filename:
+        return None, file_error or "Arquivo PDF inválido"
+
+    status_inicial = "aprovado" if confirmado else "em_elaboracao"
+    protocolo = gerar_protocolo(now.year)
+    doc = {
+        **metadados,
+        "protocolo": protocolo,
+        "status": status_inicial,
+        "responsavel_atual": usuario,
+        "ultima_atualizacao": now,
+        "historico": [
+            evento_historico(status_inicial, usuario, "Documento criado", data=now)
+        ],
+        "nome_original": file.filename,
+        "arquivo": filename,
+        "anexado_por": usuario,
+        "origem": origem,
+        "protegido_exclusao": confirmado,
+        "confirmado_financeiro": confirmado,
+        "confirmado_por": usuario if confirmado else None,
+        "data_confirmacao": now if confirmado else None,
+        "data_envio": now,
+        "dia": now.day,
+        "mes": now.month,
+        "ano": now.year,
+        "hora": now.strftime("%H:%M"),
+    }
+    resultado = db.documents.insert_one(doc)
+    doc["_id"] = resultado.inserted_id
+    return doc, None
 
 
 @doc_routes.route("/upload", methods=["POST"])
 @login_required
 def upload():
     file = request.files.get("file")
-
     if not file:
         return jsonify({"error": "Arquivo obrigatório"}), 400
 
-    now = agora_fortaleza()
+    metadados, erro = validar_metadados_documento(request.form)
+    if erro:
+        return jsonify({"error": erro}), 400
 
-    filename = save_file(
-        file,
-        current_app.config["UPLOAD_FOLDER"],
-        request.form.get("departamento"),
-        now.year,
-        now.month
-    )
+    usuario = request.current_user["email"]
+    doc, erro = criar_documento(file, metadados, usuario, "gerenciador")
+    if erro:
+        return jsonify({"error": erro}), 400
 
-    if not filename:
-        return jsonify({"error": "Apenas PDF permitido"}), 400
-
-
-    doc = {
-        "nome": request.form.get("nome"), # <-- visualizar o nome do documento no banco de dados(evitar duplicidade de nomes)
-        "nome_original": file.filename,  # <-- visualizar o nome original do arquivo que foi enviado
-        "embalagem": request.form.get("embalagem"),
-        "arquivo": filename,
-        "anexado_por": request.current_user["email"],
-        "tipo": request.form.get("tipo"),
-        "departamento": request.form.get("departamento"),
-        "modulo": request.form.get("modulo"),
-
-        "origem": "gerenciador",
-        "protegido_exclusao": False,
-
-        "confirmado_financeiro": False,
-        "confirmado_por": None,
-        "data_confirmacao": None,
-
-        "data_envio": now,
-        "dia": now.day,
-        "mes": now.month,
-        "ano": now.year,
-        "hora": now.strftime("%H:%M")
-    }
-
-    db.documents.insert_one(doc)
-
-    registrar_auditoria(
-        "upload_documento",
-        request.current_user["email"],
-        {
-            "nome": doc["nome"],
-            "modulo": doc["modulo"],
-            "departamento": doc["departamento"],
-            "tipo": doc["tipo"],
-            "origem": "gerenciador"
-        }
-    )
-
-    return jsonify({"msg": "Upload realizado com sucesso"}), 201
+    registrar_auditoria("upload_documento", usuario, {
+        "documento_id": str(doc["_id"]), "protocolo": doc["protocolo"],
+        "nome": doc["nome"], "modulo": doc["modulo"],
+        "departamento": doc["departamento"], "tipo": doc["tipo"],
+    })
+    return jsonify({"msg": "Upload realizado com sucesso", "protocolo": doc["protocolo"]}), 201
 
 
 @doc_routes.route("/financeiro/upload", methods=["POST"])
 @permission_required("financeiro")
 def financeiro_upload():
     file = request.files.get("file")
-
     if not file:
         return jsonify({"error": "Arquivo obrigatório"}), 400
 
-    now = agora_fortaleza()
+    metadados, erro = validar_metadados_documento(request.form)
+    if erro:
+        return jsonify({"error": erro}), 400
 
-    filename = save_file(
-        file,
-        current_app.config["UPLOAD_FOLDER"],
-        request.form.get("departamento"),
-        now.year,
-        now.month
-    )
+    usuario = request.current_user["email"]
+    doc, erro = criar_documento(file, metadados, usuario, "financeiro", confirmado=True)
+    if erro:
+        return jsonify({"error": erro}), 400
 
-    if not filename:
-        return jsonify({"error": "Apenas PDF permitido"}), 400
-
-
-    doc = {
-        "nome": request.form.get("nome"),
-        "nome_original": file.filename,
-        "embalagem": request.form.get("embalagem"),
-        "arquivo": filename,
-        "anexado_por": request.current_user["email"],
-        "tipo": request.form.get("tipo"),
-        "departamento": request.form.get("departamento"),
-        "modulo": request.form.get("modulo"),
-
-        "origem": "financeiro",
-        "protegido_exclusao": True,
-
-        "confirmado_financeiro": True,
-        "confirmado_por": request.current_user["email"],
-        "data_confirmacao": now,
-
-        "data_envio": now,
-        "dia": now.day,
-        "mes": now.month,
-        "ano": now.year,
-        "hora": now.strftime("%H:%M")
-    }
-
-    db.documents.insert_one(doc)
-
-    registrar_auditoria(
-        "upload_financeiro",
-        request.current_user["email"],
-        {
-            "nome": doc["nome"],
-            "modulo": doc["modulo"],
-            "departamento": doc["departamento"],
-            "tipo": doc["tipo"],
-            "origem": "financeiro"
-        }
-    )
-
-    return jsonify({"msg": "Documento financeiro adicionado com sucesso"}), 201
+    registrar_auditoria("upload_financeiro", usuario, {
+        "documento_id": str(doc["_id"]), "protocolo": doc["protocolo"],
+        "nome": doc["nome"], "modulo": doc["modulo"],
+        "departamento": doc["departamento"], "tipo": doc["tipo"],
+    })
+    return jsonify({"msg": "Documento financeiro adicionado com sucesso", "protocolo": doc["protocolo"]}), 201
 
 
 @doc_routes.route("/documents", methods=["GET"])
 @login_required
 def list_docs():
-    modulo = request.args.get("modulo")
-    departamento = request.args.get("departamento")
-
     filtro = {}
+    for campo in ("modulo", "departamento", "status"):
+        valor = request.args.get(campo)
+        if valor:
+            filtro[campo] = valor.strip().lower() if campo != "departamento" else valor.strip().upper()
 
-    if modulo:
-        filtro["modulo"] = modulo
-
-    if departamento:
-        filtro["departamento"] = departamento
-
-    docs = list(db.documents.find(filtro))
-
-    for d in docs:
-        d["_id"] = str(d["_id"])
-
+    docs = [serializar_documento(normalizar_documento_antigo(d))
+            for d in db.documents.find(filtro).sort("data_envio", -1)]
     return jsonify(docs), 200
+
+
+@doc_routes.route("/documents/<id>", methods=["GET"])
+@login_required
+def obter_doc(id):
+    if not ObjectId.is_valid(id):
+        return jsonify({"error": "ID inválido"}), 400
+    doc = db.documents.find_one({"_id": ObjectId(id)})
+    if not doc:
+        return jsonify({"error": "Documento não encontrado"}), 404
+    return jsonify(serializar_documento(normalizar_documento_antigo(doc))), 200
+
+
+@doc_routes.route("/documents/<id>/status", methods=["PATCH"])
+@login_required
+def atualizar_status(id):
+    if not ObjectId.is_valid(id):
+        return jsonify({"error": "ID inválido"}), 400
+
+    data = request.get_json(silent=True) or {}
+    novo_status = (data.get("status") or "").strip().lower()
+    observacao = (data.get("observacao") or "").strip()
+    responsavel = (data.get("responsavel") or request.current_user["email"]).strip()
+
+    if novo_status not in STATUS_DOCUMENTO:
+        return jsonify({"error": "Status inválido"}), 400
+    if len(observacao) > 1000:
+        return jsonify({"error": "A observação deve ter no máximo 1000 caracteres"}), 400
+
+    doc = db.documents.find_one({"_id": ObjectId(id)})
+    if not doc:
+        return jsonify({"error": "Documento não encontrado"}), 404
+    doc = normalizar_documento_antigo(doc)
+    status_atual = doc.get("status", "em_elaboracao")
+
+    if novo_status == status_atual:
+        return jsonify({"error": "O documento já está nesse status"}), 400
+    if novo_status not in TRANSICOES_STATUS.get(status_atual, set()):
+        return jsonify({
+            "error": f"Não é possível alterar de {STATUS_DOCUMENTO.get(status_atual)} para {STATUS_DOCUMENTO[novo_status]}"
+        }), 400
+
+    user = request.current_user
+    permissions = user.get("permissions", [])
+    if novo_status in {"aprovado", "arquivado"} and user.get("role") != "admin" and "financeiro" not in permissions:
+        return jsonify({"error": "Somente administrador ou financeiro pode aprovar ou arquivar"}), 403
+
+    now = agora_fortaleza()
+    evento = evento_historico(
+        novo_status, user["email"],
+        f"Status alterado de {STATUS_DOCUMENTO.get(status_atual)} para {STATUS_DOCUMENTO[novo_status]}",
+        observacao, now,
+    )
+    campos = {
+        "status": novo_status,
+        "responsavel_atual": responsavel,
+        "ultima_atualizacao": now,
+    }
+    if novo_status == "aprovado":
+        campos.update({"confirmado_financeiro": True, "confirmado_por": user["email"], "data_confirmacao": now})
+    elif status_atual == "aprovado" and novo_status != "arquivado":
+        campos.update({"confirmado_financeiro": False, "confirmado_por": None, "data_confirmacao": None})
+
+    db.documents.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": campos, "$push": {"historico": evento}},
+    )
+    registrar_auditoria("alterar_status_documento", user["email"], {
+        "documento_id": id, "protocolo": doc.get("protocolo"),
+        "status_anterior": status_atual, "novo_status": novo_status,
+        "responsavel": responsavel, "observacao": observacao,
+    })
+    return jsonify({"msg": "Status atualizado com sucesso", "status": novo_status,
+                    "status_label": STATUS_DOCUMENTO[novo_status]}), 200
 
 
 @doc_routes.route("/documents/<id>", methods=["PUT"])
 @permission_required("financeiro")
 def editar_doc(id):
-    try:
-        doc_antigo = db.documents.find_one({"_id": ObjectId(id)})
+    if not ObjectId.is_valid(id):
+        return jsonify({"error": "ID inválido"}), 400
+    doc_antigo = db.documents.find_one({"_id": ObjectId(id)})
+    if not doc_antigo:
+        return jsonify({"error": "Documento não encontrado"}), 404
 
-        if not doc_antigo:
-            return jsonify({"error": "Documento não encontrado"}), 404
-
-        data = request.json
-        usuario = request.current_user["email"]
-
-        novos_dados = {
-            "nome": data.get("nome"),
-            "embalagem": data.get("embalagem"),
-            "tipo": data.get("tipo"),
-            "departamento": data.get("departamento"),
-            "modulo": data.get("modulo")
-        }
-
-        db.documents.update_one(
-            {"_id": ObjectId(id)},
-            {"$set": novos_dados}
-        )
-
-        registrar_auditoria(
-            "editar_documento_financeiro",
-            usuario,
-            {
-                "documento_id": id,
-                "antes": {
-                    "nome": doc_antigo.get("nome"),
-                    "embalagem": doc_antigo.get("embalagem"),
-                    "tipo": doc_antigo.get("tipo"),
-                    "departamento": doc_antigo.get("departamento"),
-                    "modulo": doc_antigo.get("modulo")
-                },
-                "depois": novos_dados
-            }
-        )
-
-        return jsonify({"msg": "Documento editado com sucesso"}), 200
-
-    except Exception:
-        return jsonify({"error": "Erro ao editar documento"}), 400
+    novos_dados, erro = validar_metadados_documento(request.get_json(silent=True) or {})
+    if erro:
+        return jsonify({"error": erro}), 400
+    now = agora_fortaleza()
+    evento = evento_historico(doc_antigo.get("status", "em_elaboracao"), request.current_user["email"], "Metadados do documento editados", data=now)
+    db.documents.update_one({"_id": ObjectId(id)}, {"$set": {**novos_dados, "ultima_atualizacao": now}, "$push": {"historico": evento}})
+    registrar_auditoria("editar_documento_financeiro", request.current_user["email"], {"documento_id": id, "protocolo": doc_antigo.get("protocolo")})
+    return jsonify({"msg": "Documento editado com sucesso"}), 200
 
 
 @doc_routes.route("/documents/<id>/confirmar", methods=["PATCH"])
 @permission_required("financeiro")
 def confirmar_doc(id):
-    try:
-        data = request.json
-        usuario = request.current_user["email"]
-        confirmado = data.get("confirmado", True)
+    if not ObjectId.is_valid(id):
+        return jsonify({"error": "ID inválido"}), 400
 
-        now = agora_fortaleza()
+    data = request.get_json(silent=True) or {}
+    confirmado = data.get("confirmado", True)
+    doc = db.documents.find_one({"_id": ObjectId(id)})
+    if not doc:
+        return jsonify({"error": "Documento não encontrado"}), 404
 
-        campos = {
-            "confirmado_financeiro": confirmado,
-            "confirmado_por": usuario if confirmado else None,
-            "data_confirmacao": now if confirmado else None
-        }
-
-        result = db.documents.update_one(
-            {"_id": ObjectId(id)},
-            {"$set": campos}
-        )
-
-        if result.matched_count == 0:
-            return jsonify({"error": "Documento não encontrado"}), 404
-
-        registrar_auditoria(
-            "confirmar_documento_financeiro" if confirmado else "desconfirmar_documento_financeiro",
-            usuario,
-            {
-                "documento_id": id,
-                "confirmado": confirmado
-            }
-        )
-
-        return jsonify({"msg": "Status de confirmação atualizado"}), 200
-
-    except Exception:
-        return jsonify({"error": "Erro ao confirmar documento"}), 400
+    doc = normalizar_documento_antigo(doc)
+    novo_status = "aprovado" if confirmado else "em_analise"
+    now = agora_fortaleza()
+    usuario = request.current_user["email"]
+    evento = evento_historico(
+        novo_status,
+        usuario,
+        "Documento confirmado pelo financeiro" if confirmado else "Confirmação financeira removida",
+        data.get("observacao", ""),
+        now,
+    )
+    campos = {
+        "status": novo_status,
+        "responsavel_atual": usuario,
+        "ultima_atualizacao": now,
+        "confirmado_financeiro": confirmado,
+        "confirmado_por": usuario if confirmado else None,
+        "data_confirmacao": now if confirmado else None,
+    }
+    db.documents.update_one(
+        {"_id": ObjectId(id)},
+        {"$set": campos, "$push": {"historico": evento}},
+    )
+    registrar_auditoria(
+        "confirmar_documento_financeiro" if confirmado else "desconfirmar_documento_financeiro",
+        usuario,
+        {"documento_id": id, "protocolo": doc.get("protocolo"), "confirmado": confirmado},
+    )
+    return jsonify({"msg": "Status de confirmação atualizado", "status": novo_status}), 200
 
 
 @doc_routes.route("/documents/<id>", methods=["DELETE"])
 @permission_required("financeiro")
 def delete_doc(id):
-    try:
-        usuario = request.current_user["email"]
-
-        doc = db.documents.find_one({"_id": ObjectId(id)})
-
-        if not doc:
-            return jsonify({"error": "Documento não encontrado"}), 404
-
-        db.documents.delete_one({"_id": ObjectId(id)})
-
-        registrar_auditoria(
-            "delete_documento_financeiro" if usuario else "delete_documento",
-            usuario,
-            {
-                "nome": doc.get("nome"),
-                "modulo": doc.get("modulo"),
-                "departamento": doc.get("departamento"),
-                "tipo": doc.get("tipo"),
-                "arquivo": doc.get("arquivo"),
-                "origem": doc.get("origem")
-            }
-        )
-
-        return jsonify({"msg": "Removido com sucesso"}), 200
-
-    except Exception:
+    if not ObjectId.is_valid(id):
         return jsonify({"error": "ID inválido"}), 400
+    doc = db.documents.find_one({"_id": ObjectId(id)})
+    if not doc:
+        return jsonify({"error": "Documento não encontrado"}), 404
+    if doc.get("status") == "arquivado":
+        return jsonify({"error": "Documentos arquivados não podem ser excluídos"}), 409
+
+    db.documents.delete_one({"_id": ObjectId(id)})
+    registrar_auditoria("delete_documento_financeiro", request.current_user["email"], {
+        "documento_id": id, "protocolo": doc.get("protocolo"), "nome": doc.get("nome"),
+        "arquivo": doc.get("arquivo"),
+    })
+    return jsonify({"msg": "Removido com sucesso"}), 200
 
 
 @doc_routes.route("/files/<path:filename>", methods=["GET"])
@@ -289,31 +392,15 @@ def delete_doc(id):
 def get_file(filename):
     upload_folder = current_app.config["UPLOAD_FOLDER"]
     caminho_arquivo = os.path.join(upload_folder, filename)
-
     if not os.path.exists(caminho_arquivo):
-        return jsonify({
-            "error": "Arquivo não encontrado no servidor."
-        }), 404
-    registrar_auditoria(
-    "visualizar_documento",
-    request.current_user["email"],
-    {
-        "arquivo": filename
-    }
-)
-    return send_from_directory(
-        upload_folder,
-        filename,
-        as_attachment=False
-    )
+        return jsonify({"error": "Arquivo não encontrado no servidor."}), 404
+    registrar_auditoria("visualizar_documento", request.current_user["email"], {"arquivo": filename})
+    return send_from_directory(upload_folder, filename, as_attachment=False)
 
 
 @doc_routes.route("/financeiro", methods=["GET"])
 @permission_required("financeiro", "banco_dados")
 def financeiro():
-    docs = list(db.documents.find())
-
-    for d in docs:
-        d["_id"] = str(d["_id"])
-
+    docs = [serializar_documento(normalizar_documento_antigo(d))
+            for d in db.documents.find().sort("data_envio", -1)]
     return jsonify(docs), 200

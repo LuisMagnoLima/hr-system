@@ -1,11 +1,9 @@
 from flask import Blueprint, request, jsonify
-from pymongo import MongoClient
-from config import MONGO_URI, DB_NAME
 from utils.permission_utils import role_required
+from database import get_database
 auditoria_routes = Blueprint("auditoria", __name__)
 
-client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
+db = get_database()
 
 @auditoria_routes.route("/auditoria", methods=["GET"])
 @role_required("admin")
@@ -31,4 +29,4 @@ def listar_auditoria():
     for log in logs:
         log["_id"] = str(log["_id"])
 
-    return jsonify(logs), 300
+    return jsonify(logs), 200

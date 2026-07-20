@@ -2,53 +2,51 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Solicitação de Documento</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Protocolo de Recebimento</title>
   <link rel="stylesheet" href="css/solicitacao.css">
 </head>
 <body>
-
 <div class="sol-page">
   <div class="sol-container">
-
     <div class="sol-header">
       <button id="btnVoltar" class="sol-back-btn" onclick="voltar()">← Voltar</button>
       <div>
-        <h1 id="solTitulo">Solicitação - SAFE</h1>
-        <p id="solSubtitulo">Envie o documento para um usuário alimentar o sistema</p>
+        <h1 id="solTitulo">Protocolo de Recebimento</h1>
+        <p id="solSubtitulo">Registre a entrega física do ofício ao setor responsável. Nenhum arquivo será enviado.</p>
       </div>
     </div>
 
-    <div class="sol-tabs">
-      <button class="sol-tab active" onclick="setTipo('ativo', this)">ATIVO</button>
-      <button class="sol-tab" onclick="setTipo('inativo', this)">INATIVO</button>
-      <button class="sol-tab" onclick="setTipo('regional', this)">REGIONAL</button>
+    <div class="sol-info-box sol-warning">
+      O registro será enviado com a situação <strong>PENDENTE DE ACEITE</strong> até o destinatário clicar em <strong>Confirmar Recebimento</strong>.
     </div>
 
-    <div class="sol-info-box">
-      Este documento será enviado como:
-      <strong id="tipoAtualTexto">ATIVO</strong>
-    </div>
+    <label class="sol-label" for="numeroOficio">Número do ofício *</label>
+    <input type="text" id="numeroOficio" class="sol-input" placeholder="Ex.: 123/2026">
 
-    <label class="sol-label">Enviar para</label>
+    <label class="sol-label" for="nomeDocumento">Nome ou identificação do documento *</label>
+    <input type="text" id="nomeDocumento" class="sol-input" placeholder="Ex.: Solicitação de pagamento de diárias">
+
+    <label class="sol-label" for="interessado">Nome do interessado</label>
+    <input type="text" id="interessado" class="sol-input" placeholder="Pessoa, empresa ou órgão relacionado">
+
+    <label class="sol-label" for="secretaria">Secretaria *</label>
+    <input type="text" id="secretaria" class="sol-input" readonly>
+
+    <label class="sol-label" for="setorDestino">Setor de destino *</label>
+    <input type="text" id="setorDestino" class="sol-input" placeholder="Ex.: RH">
+
+    <label class="sol-label" for="destinatario">Usuário que confirmará o recebimento *</label>
     <select id="destinatario" class="sol-input">
       <option value="">Selecione um usuário</option>
     </select>
 
-    <label class="sol-label">Nome do arquivo</label>
-    <input type="text" id="nome" class="sol-input" placeholder="Digite o nome do arquivo">
-
-    <label class="sol-label">Embalagem / Armazenamento</label>
-    <input type="text" id="embalagem" class="sol-input" placeholder="Digite a embalagem">
-
-    <label class="sol-label">Arquivo PDF</label>
-    <div class="sol-upload-box">
-      <input type="file" id="file" accept="application/pdf">
-    </div>
+    <label class="sol-label" for="observacao">Observação</label>
+    <textarea id="observacao" class="sol-input sol-textarea" placeholder="Inclua apenas informações relevantes para identificar a entrega"></textarea>
 
     <button id="btnEnviar" class="sol-send-btn" onclick="enviarSolicitacao()">
-      Enviar solicitação
+      Gerar protocolo e enviar para aceite
     </button>
-
   </div>
 </div>
 <script src="js/api.js"></script>

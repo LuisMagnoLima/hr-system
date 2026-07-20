@@ -1,20 +1,18 @@
 import os
 import shutil
 from datetime import datetime
+from database import get_database
 
 import pytz
 from bson import ObjectId
 from flask import Blueprint, jsonify, current_app
-from pymongo import MongoClient
 
-from config import MONGO_URI, DB_NAME
 from utils.permission_utils import permission_required
 from utils.audit_utils import registrar_auditoria
 
 arquivamentos_routes = Blueprint("arquivamentos", __name__)
 
-client = MongoClient(MONGO_URI)
-db = client[DB_NAME]
+db = get_database()
 
 
 def agora_fortaleza():

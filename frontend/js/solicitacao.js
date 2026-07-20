@@ -1,40 +1,26 @@
 function bloquearNaoSolicitante() {
-  const token = localStorage.getItem("token")
-
+  const token = sessionStorage.getItem("hr_user")
   if (!token) {
     window.location.href = "login.html"
     return
   }
 
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]))
-
+    const payload = JSON.parse(token)
     if (payload.role !== "solicitante") {
-      alert("Você não tem acesso à tela de solicitação")
+      alert("Você não tem acesso à tela de protocolo de recebimento")
       window.location.href = "menu.html"
-      return
     }
   } catch {
-    localStorage.clear()
+    sessionStorage.clear()
     window.location.href = "login.html"
   }
 }
 
-bloquearNaoSolicitante()
-
-let tipoAtual = "ativo"
-
 function getPayload() {
-  const token = localStorage.getItem("token")
-  if (!token) {
-    window.location.href = "login.html"
-    return null
-  }
-
   try {
-    return JSON.parse(atob(token.split(".")[1]))
-  } catch (e) {
-    window.location.href = "login.html"
+    return JSON.parse(sessionStorage.getItem("hr_user") || "null")
+  } catch {
     return null
   }
 }
@@ -43,65 +29,22 @@ function getModuloAtual() {
   return localStorage.getItem("modulo") || "notas"
 }
 
-function getDepartamentoAtual() {
-  return localStorage.getItem("departamento") || "SAFE"
-}
-
-function getTemaModulo() {
-  const modulo = getModuloAtual()
-
-  if (modulo === "diarias") {
-    return { cor: "#28a745", clara: "#e8f5ec" }
-  }
-
-  if (modulo === "admissoes") {
-    return { cor: "#ff8c00", clara: "#fff2e2" }
-  }
-
-  return { cor: "#4f6df5", clara: "#edf2ff" }
-}
-
-function aplicarTemaModulo() {
-  const tema = getTemaModulo()
-  document.documentElement.style.setProperty("--cor-modulo", tema.cor)
-  document.documentElement.style.setProperty("--cor-modulo-clara", tema.clara)
-}
-
-function nomeModulo(modulo) {
-  if (modulo === "diarias") return "Diárias"
-  if (modulo === "notas") return "Notas"
-  if (modulo === "admissoes") return "Admissão e Demissão"
-  return "Módulo"
+function getSecretariaAtual() {
+  return (localStorage.getItem("departamento") || "SAFE").toUpperCase()
 }
 
 function preencherCabecalho() {
-  const modulo = getModuloAtual()
-  const departamento = getDepartamentoAtual()
-
-  document.getElementById("solTitulo").innerText =
-    `${nomeModulo(modulo)} - ${departamento}`
-}
-
-function setTipo(tipo, el) {
-  tipoAtual = tipo
-
-  document.querySelectorAll(".sol-tab").forEach(btn => {
-    btn.classList.remove("active")
-  })
-
-  el.classList.add("active")
-  document.getElementById("tipoAtualTexto").innerText = tipo.toUpperCase()
+  const secretaria = getSecretariaAtual()
+  document.getElementById("solTitulo").innerText = `Protocolo de Recebimento - ${secretaria}`
+  document.getElementById("secretaria").value = secretaria
 }
 
 async function carregarUsuariosPorPermissao() {
-  const modulo = getModuloAtual()
   const select = document.getElementById("destinatario")
-
   select.innerHTML = `<option value="">Selecione um usuário</option>`
 
   try {
-    const users = await apiFetch(`/usuarios-por-permissao?modulo=${modulo}`)
-
+    const users = await apiFetch(`/usuarios-por-permissao?modulo=${encodeURIComponent(getModuloAtual())}`)
     if (!Array.isArray(users)) return
 
     users.forEach(user => {
@@ -112,64 +55,66 @@ async function carregarUsuariosPorPermissao() {
     })
   } catch (err) {
     console.error("Erro ao carregar usuários:", err)
+    alert(err.message || "Erro ao carregar usuários")
   }
 }
 
 async function enviarSolicitacao() {
   const payload = getPayload()
-  if (!payload) return
+  if (!payload) {
+    window.location.href = "login.html"
+    return
+  }
 
+  const numeroOficio = document.getElementById("numeroOficio").value.trim()
+  const nomeDocumento = document.getElementById("nomeDocumento").value.trim()
+  const interessado = document.getElementById("interessado").value.trim()
+  const secretaria = document.getElementById("secretaria").value.trim()
+  const setorDestino = document.getElementById("setorDestino").value.trim()
   const destinatario = document.getElementById("destinatario").value
-  const nome = document.getElementById("nome").value.trim()
-  const embalagem = document.getElementById("embalagem").value.trim()
-  const file = document.getElementById("file").files[0]
-  const modulo = getModuloAtual()
-  const departamento = getDepartamentoAtual()
+  const observacao = document.getElementById("observacao").value.trim()
+  const botao = document.getElementById("btnEnviar")
 
-  if (!destinatario) {
-    alert("Selecione um usuário")
+  if (!numeroOficio || !nomeDocumento || !secretaria || !setorDestino || !destinatario) {
+    alert("Preencha o número do ofício, nome do documento, secretaria, setor e destinatário")
     return
   }
 
-  if (!nome) {
-    alert("Digite o nome do arquivo")
-    return
-  }
-
-  if (!file) {
-    alert("Selecione um PDF")
-    return
-  }
-
-  const formData = new FormData()
-  formData.append("remetente", payload.email)
-  formData.append("destinatario", destinatario)
-  formData.append("nome", nome)
-  formData.append("embalagem", embalagem)
-  formData.append("tipo", tipoAtual)
-  formData.append("modulo", modulo)
-  formData.append("departamento", departamento)
-  formData.append("file", file)
+  botao.disabled = true
+  botao.innerText = "Gerando protocolo..."
 
   try {
     const data = await apiFetch("/solicitacoes", {
       method: "POST",
-      body: formData
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        numero_oficio: numeroOficio,
+        nome_documento: nomeDocumento,
+        interessado,
+        secretaria,
+        setor_destino: setorDestino,
+        destinatario,
+        observacao,
+        modulo: getModuloAtual()
+      })
     })
 
-    if (data?.error) {
-      alert(data.error)
-      return
-    }
+    alert(
+      `Protocolo criado com sucesso!\n\n${data.protocolo}\nSituação: ${data.situacao}\nOfício: ${numeroOficio}`
+    )
 
-    alert(`Solicitação enviada para ${destinatario} com sucesso!`)
-
+    document.getElementById("numeroOficio").value = ""
+    document.getElementById("nomeDocumento").value = ""
+    document.getElementById("interessado").value = ""
+    document.getElementById("setorDestino").value = ""
     document.getElementById("destinatario").value = ""
-    document.getElementById("nome").value = ""
-    document.getElementById("embalagem").value = ""
-    document.getElementById("file").value = ""
+    document.getElementById("observacao").value = ""
+    document.getElementById("numeroOficio").focus()
   } catch (err) {
-    alert("Erro de conexão com o servidor")
+    alert(err.message || "Erro de conexão com o servidor")
+  } finally {
+    botao.disabled = false
+    botao.innerText = "Gerar protocolo e enviar para aceite"
   }
 }
 
@@ -177,6 +122,7 @@ function voltar() {
   window.location.href = "departamentos.html"
 }
 
-aplicarTemaModulo()
+bloquearNaoSolicitante()
 preencherCabecalho()
 carregarUsuariosPorPermissao()
+document.getElementById("numeroOficio").focus()

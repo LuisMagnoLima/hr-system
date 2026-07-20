@@ -1,10 +1,10 @@
 let filtroAtual = "ativo"
 
 function bloquearSolicitante() {
-  const token = localStorage.getItem("token")
+  const token = sessionStorage.getItem("hr_user")
   if (!token) return
 
-  const payload = JSON.parse(atob(token.split(".")[1]))
+  const payload = JSON.parse(token)
 
   if (payload.role === "solicitante") {
     alert("Você não tem acesso ao gerenciador")
@@ -39,10 +39,10 @@ function aplicarTemaModulo() {
 }
 
 function getUser() {
-  const token = localStorage.getItem("token")
+  const token = sessionStorage.getItem("hr_user")
   if (!token) return "Desconhecido"
 
-  const payload = JSON.parse(atob(token.split(".")[1]))
+  const payload = JSON.parse(token)
   return payload.email
 }
 
@@ -298,7 +298,7 @@ function enviarArquivoComProgresso(url, formData, file) {
     }
 
     xhr.open("POST", API_URL + url)
-    xhr.setRequestHeader("Authorization", "Bearer " + localStorage.getItem("token"))
+    xhr.withCredentials = true
     xhr.send(formData)
   })
 }
@@ -321,69 +321,176 @@ async function loadDocs() {
 
   const modulo = localStorage.getItem("modulo")
   const departamento = getDepartamentoAtual()
-  const buscaInput = document.getElementById("busca")
-  const busca = buscaInput ? buscaInput.value.toLowerCase().trim() : ""
+  const busca = (document.getElementById("busca")?.value || "").toLowerCase().trim()
+  const statusFiltro = document.getElementById("filtroStatus")?.value || ""
 
-  const docs = await apiFetch(`/documents?modulo=${modulo}&departamento=${departamento}`)
+  try {
+    const docs = await apiFetch(`/documents?modulo=${encodeURIComponent(modulo)}&departamento=${encodeURIComponent(departamento)}`)
+    const lista = document.getElementById("lista")
+    lista.innerHTML = ""
 
-  const lista = document.getElementById("lista")
-  lista.innerHTML = ""
+    const filtrados = docs
+      .filter(doc => doc.tipo === filtroAtual)
+      .filter(doc => !statusFiltro || doc.status === statusFiltro)
+      .filter(doc => `${doc.nome || ""} ${doc.protocolo || ""}`.toLowerCase().includes(busca))
 
-  const filtrados = docs
-    .filter(doc => doc.tipo === filtroAtual)
-    .filter(doc => (doc.nome || "").toLowerCase().includes(busca))
+    const contadorDocs = document.getElementById("contadorDocs")
+    if (contadorDocs) contadorDocs.innerText = `${filtrados.length} documento(s) encontrado(s)`
 
-  const contadorDocs = document.getElementById("contadorDocs")
-  if (contadorDocs) {
-    contadorDocs.innerText = `${filtrados.length} documento(s) encontrado(s)`
+    if (filtrados.length === 0) {
+      lista.innerHTML = `
+        <div class="ger-empty">
+          <div class="ger-empty-icon">📄</div>
+          <h3>Nenhum documento encontrado</h3>
+          <p>Adicione um novo registro ou altere os filtros</p>
+        </div>`
+      return
+    }
+
+    filtrados.forEach(doc => {
+      const card = document.createElement("div")
+      card.className = "ger-card"
+      card.innerHTML = `
+        <h3>${escapeHtml(doc.nome || "Sem nome")}</h3>
+        <p class="ger-protocolo">${escapeHtml(doc.protocolo || "Sem protocolo")}</p>
+        <div class="ger-badges">
+          <span class="ger-badge ger-badge-tipo">${escapeHtml((doc.tipo || "").toUpperCase())}</span>
+          <span class="ger-badge ger-badge-status">${escapeHtml(doc.status_label || doc.status || "")}</span>
+        </div>
+        <p>📦 ${escapeHtml(doc.embalagem || "Sem embalagem")}</p>
+        <p>👤 ${escapeHtml(doc.anexado_por || "Não informado")}</p>
+        <p>📂 ${escapeHtml(doc.departamento || "Não informado")}</p>
+        <p>➡ Responsável: ${escapeHtml(doc.responsavel_atual || "Não informado")}</p>
+        <div class="ger-card-actions">
+          <button class="ger-detail-btn" type="button">Detalhes</button>
+          <button class="ger-download-btn" type="button">Abrir PDF</button>
+          <button class="ger-delete-btn" type="button">🗑</button>
+        </div>`
+
+      const botoes = card.querySelectorAll("button")
+      botoes[0].addEventListener("click", () => abrirDetalhes(doc._id))
+      botoes[1].addEventListener("click", () => baixarArquivo(doc.arquivo))
+      botoes[2].addEventListener("click", () => remover(doc._id))
+      lista.appendChild(card)
+    })
+  } catch (error) {
+    alert(error.message || "Erro ao carregar documentos")
   }
+}
 
-  if (filtrados.length === 0) {
-    lista.innerHTML = `
-      <div class="ger-empty">
-        <div class="ger-empty-icon">📄</div>
-        <h3>Nenhum documento encontrado</h3>
-        <p>Adicione um novo registro ou altere o filtro</p>
-      </div>
-    `
+function escapeHtml(valor) {
+  return String(valor ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;")
+}
+
+const TRANSICOES_FRONT = {
+  em_elaboracao: ["enviado"],
+  enviado: ["em_analise", "rejeitado"],
+  em_analise: ["aprovado", "rejeitado", "enviado"],
+  aprovado: ["arquivado", "em_analise"],
+  rejeitado: ["em_elaboracao", "enviado"],
+  arquivado: []
+}
+
+const STATUS_LABELS = {
+  em_elaboracao: "Em elaboração",
+  enviado: "Enviado",
+  em_analise: "Em análise",
+  aprovado: "Aprovado",
+  rejeitado: "Rejeitado",
+  arquivado: "Arquivado"
+}
+
+let documentoDetalheAtual = null
+
+function formatarDataFluxo(valor) {
+  if (!valor) return "Data não informada"
+  const data = new Date(valor)
+  return Number.isNaN(data.getTime()) ? String(valor) : data.toLocaleString("pt-BR")
+}
+
+async function abrirDetalhes(id) {
+  try {
+    const doc = await apiFetch(`/documents/${id}`)
+    documentoDetalheAtual = doc
+    document.getElementById("detalheTitulo").innerText = doc.nome || "Detalhes do documento"
+    document.getElementById("detalheProtocolo").innerText = doc.protocolo || "Sem protocolo"
+    document.getElementById("novoResponsavel").value = doc.responsavel_atual || getUser()
+    document.getElementById("observacaoStatus").value = ""
+
+    document.getElementById("detalheResumo").innerHTML = [
+      ["Status", doc.status_label || doc.status],
+      ["Secretaria", doc.departamento],
+      ["Módulo", doc.modulo],
+      ["Tipo", doc.tipo],
+      ["Criado por", doc.anexado_por],
+      ["Responsável atual", doc.responsavel_atual],
+      ["Data de criação", formatarDataFluxo(doc.data_envio)],
+      ["Última atualização", formatarDataFluxo(doc.ultima_atualizacao)]
+    ].map(([rotulo, valor]) => `
+      <div class="ger-detail-item"><small>${escapeHtml(rotulo)}</small><strong>${escapeHtml(valor || "Não informado")}</strong></div>
+    `).join("")
+
+    const select = document.getElementById("novoStatus")
+    const proximos = TRANSICOES_FRONT[doc.status] || []
+    select.innerHTML = proximos.length
+      ? proximos.map(status => `<option value="${status}">${STATUS_LABELS[status]}</option>`).join("")
+      : '<option value="">Fluxo concluído</option>'
+    select.disabled = proximos.length === 0
+
+    const historico = [...(doc.historico || [])].reverse()
+    document.getElementById("detalheHistorico").innerHTML = historico.length
+      ? historico.map(item => `
+          <div class="ger-timeline-item">
+            <strong>${escapeHtml(item.status_label || item.status || "Movimentação")}</strong>
+            <div class="ger-timeline-meta">${escapeHtml(formatarDataFluxo(item.data))} · ${escapeHtml(item.usuario || "sistema")}</div>
+            <div>${escapeHtml(item.acao || "Status atualizado")}</div>
+            ${item.observacao ? `<p class="ger-timeline-note">${escapeHtml(item.observacao)}</p>` : ""}
+          </div>`).join("")
+      : "<p>Nenhuma movimentação registrada.</p>"
+
+    document.getElementById("modalDetalhes").style.display = "flex"
+  } catch (error) {
+    alert(error.message || "Erro ao abrir detalhes")
+  }
+}
+
+function fecharDetalhes() {
+  documentoDetalheAtual = null
+  document.getElementById("modalDetalhes").style.display = "none"
+}
+
+async function salvarNovoStatus() {
+  if (!documentoDetalheAtual) return
+  const status = document.getElementById("novoStatus").value
+  const responsavel = document.getElementById("novoResponsavel").value.trim()
+  const observacao = document.getElementById("observacaoStatus").value.trim()
+  if (!status) {
+    alert("Não há uma próxima movimentação disponível")
     return
   }
 
-  filtrados.forEach(doc => {
-    lista.innerHTML += `
-      <div class="ger-card">
-        <h3>${doc.nome}</h3>
-
-        <div class="ger-badges">
-          <span class="ger-badge ger-badge-tipo">${doc.tipo.toUpperCase()}</span>
-        </div>
-
-        <p>📦 ${doc.embalagem || "Sem embalagem"}</p>
-        <p>👤 ${doc.anexado_por}</p>
-        <p>📂 ${doc.departamento}</p>
-
-        <div class="ger-card-actions">
-          <button
-            class="ger-download-btn"
-            onclick="baixarArquivo('${doc.arquivo}')">
-             📥 Baixar
-          </button>
-          <button class="ger-delete-btn" onclick="remover('${doc._id}')">🗑</button>
-        </div>
-      </div>
-    `
-  })
+  try {
+    await apiFetch(`/documents/${documentoDetalheAtual._id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status, responsavel, observacao })
+    })
+    await abrirDetalhes(documentoDetalheAtual._id)
+    await loadDocs()
+  } catch (error) {
+    alert(error.message || "Erro ao atualizar o status")
+  }
 }
 
-
 async function baixarArquivo(filename) {
-  const token = localStorage.getItem("token");
+  const token = sessionStorage.getItem("hr_user");
 
-  const response = await fetch(`${API_URL}/files/${filename}`, {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  });
+  const response = await fetch(`${API_URL}/files/${filename}`, { credentials: "include" });
 
   if (!response.ok) {
     const erro = await response.json().catch(() => ({}));
@@ -418,11 +525,16 @@ async function remover(id) {
 
 window.onclick = function(event) {
   const modal = document.getElementById("modal")
+  const modalDetalhes = document.getElementById("modalDetalhes")
   if (event.target === modal) fecharModal()
+  if (event.target === modalDetalhes) fecharDetalhes()
 }
 
 document.addEventListener("keydown", function(e) {
-  if (e.key === "Escape") fecharModal()
+  if (e.key === "Escape") {
+    fecharModal()
+    fecharDetalhes()
+  }
 })
 
 aplicarTemaModulo()

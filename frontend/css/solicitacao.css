@@ -139,3 +139,6 @@ body {
 .sol-back-btn:hover {
   opacity: 0.92;
 }
+.sol-warning { border-left: 5px solid #f4c542; background: #fff9df; color: #5f4b00; }
+.sol-textarea { min-height: 100px; resize: vertical; font-family: Arial, sans-serif; }
+.sol-send-btn:disabled { opacity: .65; cursor: wait; }
