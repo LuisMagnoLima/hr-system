@@ -392,7 +392,7 @@ async function loadDocs() {
 
       const botoes = card.querySelectorAll("button")
       botoes[0].addEventListener("click", () => abrirDetalhes(doc._id))
-      botoes[1].addEventListener("click", () => baixarArquivo(doc.arquivo))
+      botoes[1].addEventListener("click", () => abrirPdf(doc))
       botoes[2].addEventListener("click", () => remover(doc._id))
       lista.appendChild(card)
     })
@@ -510,29 +510,88 @@ async function salvarNovoStatus() {
   }
 }
 
-async function baixarArquivo(filename) {
-  const token = sessionStorage.getItem("hr_user");
+let pdfAtual = null
 
-  const response = await fetch(`${API_URL}/files/${filename}`, { credentials: "include" });
+async function abrirPdf(doc) {
+  const modal = document.getElementById("modalPdf")
+  const viewer = document.getElementById("pdfViewer")
+  const titulo = document.getElementById("pdfTitulo")
+  const nomeArquivo = document.getElementById("pdfNomeArquivo")
+  const carregando = document.getElementById("pdfCarregando")
 
-  if (!response.ok) {
-    const erro = await response.json().catch(() => ({}));
-    alert(erro.error || "Erro ao baixar o arquivo.");
-    return;
+  if (!modal || !viewer) return
+
+  fecharPdf()
+
+  modal.style.display = "flex"
+  document.body.classList.add("ger-modal-open")
+  if (titulo) titulo.innerText = doc.nome || "Visualizar PDF"
+  if (nomeArquivo) nomeArquivo.innerText = doc.arquivo_nome || doc.nome_original || doc.arquivo || "documento.pdf"
+  if (carregando) carregando.style.display = "block"
+
+  try {
+    const response = await fetch(`${API_URL}/documents/${doc._id}/pdf`, {
+      credentials: "include"
+    })
+
+    if (!response.ok) {
+      const erro = await response.json().catch(() => ({}))
+      throw new Error(erro.error || "Não foi possível abrir o PDF")
+    }
+
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+
+    pdfAtual = {
+      url,
+      nome: doc.arquivo_nome || doc.nome_original || doc.arquivo || "documento.pdf"
+    }
+
+    viewer.src = url
+    viewer.onload = () => {
+      if (carregando) carregando.style.display = "none"
+    }
+  } catch (error) {
+    if (carregando) carregando.style.display = "none"
+    fecharPdf()
+    alert(error.message || "Erro ao carregar o PDF")
+  }
+}
+
+function fecharPdf() {
+  const modal = document.getElementById("modalPdf")
+  const viewer = document.getElementById("pdfViewer")
+  const carregando = document.getElementById("pdfCarregando")
+
+  if (viewer) {
+    viewer.onload = null
+    viewer.src = "about:blank"
   }
 
-  const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
+  if (pdfAtual?.url) {
+    URL.revokeObjectURL(pdfAtual.url)
+  }
 
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-
-  URL.revokeObjectURL(url);
+  pdfAtual = null
+  if (carregando) carregando.style.display = "none"
+  if (modal) modal.style.display = "none"
+  document.body.classList.remove("ger-modal-open")
 }
+
+function baixarPdfAtual() {
+  if (!pdfAtual?.url) {
+    alert("Nenhum PDF está aberto")
+    return
+  }
+
+  const link = document.createElement("a")
+  link.href = pdfAtual.url
+  link.download = pdfAtual.nome
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+}
+
 async function remover(id) {
   const data = await apiFetch(`/documents/${id}?usuario=${encodeURIComponent(getUser())}`, {
     method: "DELETE"
@@ -549,14 +608,17 @@ async function remover(id) {
 window.onclick = function(event) {
   const modal = document.getElementById("modal")
   const modalDetalhes = document.getElementById("modalDetalhes")
+  const modalPdf = document.getElementById("modalPdf")
   if (event.target === modal) fecharModal()
   if (event.target === modalDetalhes) fecharDetalhes()
+  if (event.target === modalPdf) fecharPdf()
 }
 
 document.addEventListener("keydown", function(e) {
   if (e.key === "Escape") {
     fecharModal()
     fecharDetalhes()
+    fecharPdf()
   }
 })
 

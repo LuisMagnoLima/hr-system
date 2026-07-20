@@ -139,6 +139,36 @@
     </div>
   </div>
 </div>
+
+<div id="modalPdf" class="ger-modal">
+  <div class="ger-modal-content ger-pdf-modal">
+    <div class="ger-modal-header">
+      <div>
+        <h2 id="pdfTitulo">Visualizar PDF</h2>
+        <p id="pdfNomeArquivo" class="ger-protocolo"></p>
+      </div>
+      <button class="ger-close-btn" type="button" onclick="fecharPdf()">✕</button>
+    </div>
+
+    <div id="pdfCarregando" class="ger-pdf-loading">Carregando PDF...</div>
+
+    <iframe
+      id="pdfViewer"
+      class="ger-pdf-viewer"
+      title="Visualizador de PDF"
+    ></iframe>
+
+    <div class="ger-pdf-actions">
+      <button class="ger-outline-btn" type="button" onclick="baixarPdfAtual()">
+        Baixar PDF
+      </button>
+      <button class="ger-primary-btn" type="button" onclick="fecharPdf()">
+        Fechar
+      </button>
+    </div>
+  </div>
+</div>
+
 <script src="js/api.js"></script>
 <script src="js/gerenciador.js"></script>
 </body>

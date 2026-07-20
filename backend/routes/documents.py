@@ -2,8 +2,8 @@ from datetime import datetime
 import os
 from database import get_database
 
-from bson import ObjectId
-from flask import Blueprint, current_app, jsonify, request, send_from_directory
+from bson import Binary, ObjectId
+from flask import Blueprint, Response, current_app, jsonify, request, send_from_directory
 from pymongo import ReturnDocument
 import pytz
 
@@ -94,6 +94,8 @@ def normalizar_documento_antigo(documento):
 
 def serializar_documento(documento):
     documento = dict(documento)
+    # Nunca envia os bytes do PDF nas respostas JSON.
+    documento.pop("arquivo_dados", None)
     documento["_id"] = str(documento["_id"])
     documento["status_label"] = STATUS_DOCUMENTO.get(
         documento.get("status"), documento.get("status", "")
@@ -129,19 +131,35 @@ def validar_metadados_documento(origem):
 
 
 def criar_documento(file, metadados, usuario, origem, confirmado=False):
-    now = agora_fortaleza()
-    filename, file_error = save_file(
-        file,
-        current_app.config["UPLOAD_FOLDER"],
-        metadados["departamento"],
-        now.year,
-        now.month,
-    )
-    if not filename:
-        return None, file_error or "Arquivo PDF inválido"
+    """Cria o documento e armazena o PDF diretamente no MongoDB.
 
+    Solução temporária para o Render. Como um documento BSON possui limite de
+    16 MB, o sistema aceita PDFs de até 14 MB para deixar espaço aos metadados.
+    """
+    if not file or not file.filename:
+        return None, "Arquivo PDF obrigatório"
+
+    if not file.filename.lower().endswith(".pdf"):
+        return None, "Apenas arquivos PDF são permitidos"
+
+    dados_pdf = file.read()
+    limite_pdf = 14 * 1024 * 1024
+
+    if not dados_pdf:
+        return None, "O arquivo PDF está vazio"
+
+    if len(dados_pdf) > limite_pdf:
+        return None, "O PDF deve ter no máximo 14 MB"
+
+    # Confirma a assinatura básica de um arquivo PDF.
+    if not dados_pdf.startswith(b"%PDF"):
+        return None, "O arquivo enviado não é um PDF válido"
+
+    now = agora_fortaleza()
     status_inicial = "aprovado" if confirmado else "em_elaboracao"
     protocolo = gerar_protocolo(now.year)
+    nome_original = file.filename
+
     doc = {
         **metadados,
         "protocolo": protocolo,
@@ -151,8 +169,12 @@ def criar_documento(file, metadados, usuario, origem, confirmado=False):
         "historico": [
             evento_historico(status_inicial, usuario, "Documento criado", data=now)
         ],
-        "nome_original": file.filename,
-        "arquivo": filename,
+        "nome_original": nome_original,
+        "arquivo": nome_original,
+        "arquivo_nome": nome_original,
+        "arquivo_tipo": "application/pdf",
+        "arquivo_tamanho": len(dados_pdf),
+        "arquivo_dados": Binary(dados_pdf),
         "anexado_por": usuario,
         "origem": origem,
         "protegido_exclusao": confirmado,
@@ -165,6 +187,7 @@ def criar_documento(file, metadados, usuario, origem, confirmado=False):
         "ano": now.year,
         "hora": now.strftime("%H:%M"),
     }
+
     resultado = db.documents.insert_one(doc)
     doc["_id"] = resultado.inserted_id
     return doc, None
@@ -182,16 +205,30 @@ def upload():
         return jsonify({"error": erro}), 400
 
     usuario = request.current_user["email"]
-    doc, erro = criar_documento(file, metadados, usuario, "gerenciador")
+    doc, erro = criar_documento(
+        file,
+        metadados,
+        usuario,
+        "gerenciador",
+        confirmado=False,
+    )
     if erro:
         return jsonify({"error": erro}), 400
 
     registrar_auditoria("upload_documento", usuario, {
-        "documento_id": str(doc["_id"]), "protocolo": doc["protocolo"],
-        "nome": doc["nome"], "modulo": doc["modulo"],
-        "departamento": doc["departamento"], "tipo": doc["tipo"],
+        "documento_id": str(doc["_id"]),
+        "protocolo": doc["protocolo"],
+        "nome": doc["nome"],
+        "modulo": doc["modulo"],
+        "departamento": doc["departamento"],
+        "tipo": doc["tipo"],
     })
-    return jsonify({"msg": "Upload realizado com sucesso", "protocolo": doc["protocolo"]}), 201
+
+    return jsonify({
+        "msg": "Upload realizado com sucesso",
+        "documento_id": str(doc["_id"]),
+        "protocolo": doc["protocolo"],
+    }), 201
 
 
 @doc_routes.route("/financeiro/upload", methods=["POST"])
@@ -228,7 +265,7 @@ def list_docs():
             filtro[campo] = valor.strip().lower() if campo != "departamento" else valor.strip().upper()
 
     docs = [serializar_documento(normalizar_documento_antigo(d))
-            for d in db.documents.find(filtro).sort("data_envio", -1)]
+            for d in db.documents.find(filtro, {"arquivo_dados": 0}).sort("data_envio", -1)]
     return jsonify(docs), 200
 
 
@@ -237,10 +274,57 @@ def list_docs():
 def obter_doc(id):
     if not ObjectId.is_valid(id):
         return jsonify({"error": "ID inválido"}), 400
-    doc = db.documents.find_one({"_id": ObjectId(id)})
+    doc = db.documents.find_one({"_id": ObjectId(id)}, {"arquivo_dados": 0})
     if not doc:
         return jsonify({"error": "Documento não encontrado"}), 404
     return jsonify(serializar_documento(normalizar_documento_antigo(doc))), 200
+
+
+@doc_routes.route("/documents/<id>/pdf", methods=["GET"])
+@login_required
+def visualizar_pdf(id):
+    if not ObjectId.is_valid(id):
+        return jsonify({"error": "ID inválido"}), 400
+
+    doc = db.documents.find_one(
+        {"_id": ObjectId(id)},
+        {
+            "arquivo_dados": 1,
+            "arquivo_nome": 1,
+            "nome_original": 1,
+            "arquivo_tipo": 1,
+            "arquivo": 1,
+            "protocolo": 1,
+        },
+    )
+    if not doc:
+        return jsonify({"error": "Documento não encontrado"}), 404
+
+    dados = doc.get("arquivo_dados")
+    if dados is None:
+        return jsonify({
+            "error": "Este PDF antigo não está salvo no MongoDB. Reenvie o documento."
+        }), 404
+
+    nome = doc.get("arquivo_nome") or doc.get("nome_original") or "documento.pdf"
+    nome_seguro = nome.replace('"', "").replace("\r", "").replace("\n", "")
+
+    registrar_auditoria("visualizar_documento", request.current_user["email"], {
+        "documento_id": id,
+        "protocolo": doc.get("protocolo"),
+        "arquivo": nome_seguro,
+    })
+
+    return Response(
+        bytes(dados),
+        status=200,
+        mimetype=doc.get("arquivo_tipo") or "application/pdf",
+        headers={
+            "Content-Disposition": f'inline; filename="{nome_seguro}"',
+            "Cache-Control": "no-store, private",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
 
 
 @doc_routes.route("/documents/<id>/status", methods=["PATCH"])
@@ -402,5 +486,5 @@ def get_file(filename):
 @permission_required("financeiro", "banco_dados")
 def financeiro():
     docs = [serializar_documento(normalizar_documento_antigo(d))
-            for d in db.documents.find().sort("data_envio", -1)]
+            for d in db.documents.find({}, {"arquivo_dados": 0}).sort("data_envio", -1)]
     return jsonify(docs), 200
