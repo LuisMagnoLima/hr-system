@@ -89,9 +89,9 @@ def criar_solicitacao():
     observacao = (data.get("observacao") or "").strip()
     modulo = (data.get("modulo") or "").strip().lower()
 
-    if not destinatario or not numero_oficio or not nome_documento or not secretaria or not setor_destino:
+    if not numero_oficio:
         return jsonify({
-            "error": "Destinatário, número do ofício, nome do documento, secretaria e setor são obrigatórios"
+            "error": "Número do ofício é obrigatório"
         }), 400
 
     if destinatario == remetente:

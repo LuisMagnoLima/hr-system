@@ -13,7 +13,7 @@
       <div>
         <button class="cp-back" onclick="window.location.href='menu.html'">← Voltar</button>
         <h1>Controle de Protocolos</h1>
-        <p>Painel da recepção para acompanhar os ofícios entregues aos setores.</p>
+        <p>Registro de entrada de ofícios físicos.</p>
       </div>
       <button class="cp-export" id="btnExportar">Exportar CSV</button>
     </header>
@@ -29,19 +29,6 @@
     <section class="cp-filtros">
       <input id="fProtocolo" placeholder="Protocolo">
       <input id="fOficio" placeholder="Número do ofício">
-      <input id="fInteressado" placeholder="Interessado">
-      <input id="fSecretaria" placeholder="Secretaria">
-      <input id="fSetor" placeholder="Setor">
-      <input id="fAceitoPor" placeholder="Aceito por">
-      <select id="fSituacao">
-        <option value="">Todas as situações</option>
-        <option value="pendente_aceite">Pendente de Aceite</option>
-        <option value="aceite_confirmado">Aceite Confirmado</option>
-        <option value="cancelado">Cancelado</option>
-        <option value="recusado_destinatario">Recusado pelo Destinatário</option>
-      </select>
-      <label>De <input id="fDataInicial" type="date"></label>
-      <label>Até <input id="fDataFinal" type="date"></label>
       <div class="cp-filter-actions">
         <button id="btnFiltrar">Aplicar filtros</button>
         <button id="btnLimpar" class="secondary">Limpar</button>
@@ -53,8 +40,7 @@
       <table>
         <thead>
           <tr>
-            <th>Protocolo</th><th>Ofício</th><th>Documento / interessado</th><th>Secretaria / setor</th>
-            <th>Destino</th><th>Situação</th><th>Datas</th><th>Ações</th>
+            <th>Protocolo</th><th>Nº Ofício</th><th>Cadastrado por</th><th>Data/Hora</th><th>Ações</th>
           </tr>
         </thead>
         <tbody id="cpTabela"></tbody>
