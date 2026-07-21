@@ -5,10 +5,11 @@ from database import get_database
 
 import pytz
 from bson import ObjectId
-from flask import Blueprint, jsonify, current_app
+from flask import Blueprint, jsonify, current_app, request
 
-from utils.permission_utils import permission_required
+from utils.permission_utils import permission_required, role_required
 from utils.audit_utils import registrar_auditoria
+from utils.cleanup_utils import adicionar_meses, excluir_arquivamento_definitivamente
 
 arquivamentos_routes = Blueprint("arquivamentos", __name__)
 
@@ -25,7 +26,12 @@ def agora_fortaleza():
 def listar_arquivamentos():
     docs = list(db.arquivamentos.find())
 
+    now = agora_fortaleza()
     for d in docs:
+        if not d.get("data_exclusao_definitiva") and d.get("data_arquivamento"):
+            d["data_exclusao_definitiva"] = adicionar_meses(d["data_arquivamento"], 6)
+        expira = d.get("data_exclusao_definitiva")
+        d["segundos_restantes"] = max(0, int((expira - now).total_seconds())) if expira else None
         d["_id"] = str(d["_id"])
 
     return jsonify(docs), 200
@@ -64,7 +70,11 @@ def restaurar_arquivamento(id):
     arquivado.pop("_id", None)
     arquivado.pop("data_arquivamento", None)
     arquivado.pop("documento_original_id", None)
+    arquivado.pop("data_exclusao_definitiva", None)
+    arquivado.pop("motivo_arquivamento", None)
+    arquivado.pop("arquivado_por", None)
 
+    arquivado["status"] = "aprovado" if arquivado.get("confirmado_financeiro") else "em_elaboracao"
     arquivado["status_arquivo"] = "ativo"
     arquivado["data_envio"] = now
     arquivado["dia"] = now.day
@@ -77,7 +87,7 @@ def restaurar_arquivamento(id):
 
     registrar_auditoria(
         "restaurar_arquivamento",
-        "admin",
+        request.current_user["email"],
         {
             "nome": arquivado.get("nome"),
             "arquivo": arquivado.get("arquivo"),
@@ -87,3 +97,24 @@ def restaurar_arquivamento(id):
     )
 
     return jsonify({"msg": "Documento restaurado com sucesso"}), 200
+
+
+@arquivamentos_routes.route("/arquivamentos/<id>", methods=["DELETE"])
+@role_required("admin")
+def excluir_arquivamento(id):
+    if not ObjectId.is_valid(id):
+        return jsonify({"error": "ID inválido"}), 400
+
+    arquivado = db.arquivamentos.find_one({"_id": ObjectId(id)})
+    if not arquivado:
+        return jsonify({"error": "Arquivamento não encontrado"}), 404
+
+    try:
+        excluir_arquivamento_definitivamente(
+            arquivado,
+            request.current_user["email"],
+        )
+    except OSError:
+        return jsonify({"error": "Não foi possível apagar o arquivo físico"}), 500
+
+    return jsonify({"msg": "Documento excluído definitivamente"}), 200

@@ -2,13 +2,14 @@ from datetime import datetime
 import os
 from database import get_database
 
-from bson import Binary, ObjectId
+from bson import ObjectId
 from flask import Blueprint, Response, current_app, jsonify, request, send_from_directory
 from pymongo import ReturnDocument
 import pytz
 
 from utils.audit_utils import registrar_auditoria
 from utils.file_utils import save_file
+from utils.cleanup_utils import arquivar_documento
 from utils.permission_utils import login_required, permission_required
 
 
@@ -131,31 +132,27 @@ def validar_metadados_documento(origem):
 
 
 def criar_documento(file, metadados, usuario, origem, confirmado=False):
-    """Cria o documento e armazena o PDF diretamente no MongoDB.
+    """Cria o documento e salva o PDF no volume persistente de uploads.
 
-    Solução temporária para o Render. Como um documento BSON possui limite de
-    16 MB, o sistema aceita PDFs de até 14 MB para deixar espaço aos metadados.
+    Os metadados permanecem no MongoDB e o arquivo fica no sistema de arquivos,
+    permitindo PDFs grandes sem o limite de 16 MB por documento BSON.
     """
     if not file or not file.filename:
         return None, "Arquivo PDF obrigatório"
 
-    if not file.filename.lower().endswith(".pdf"):
-        return None, "Apenas arquivos PDF são permitidos"
-
-    dados_pdf = file.read()
-    limite_pdf = 14 * 1024 * 1024
-
-    if not dados_pdf:
-        return None, "O arquivo PDF está vazio"
-
-    if len(dados_pdf) > limite_pdf:
-        return None, "O PDF deve ter no máximo 14 MB"
-
-    # Confirma a assinatura básica de um arquivo PDF.
-    if not dados_pdf.startswith(b"%PDF"):
-        return None, "O arquivo enviado não é um PDF válido"
-
     now = agora_fortaleza()
+    caminho_relativo, erro = save_file(
+        file,
+        current_app.config["UPLOAD_FOLDER"],
+        metadados.get("departamento", "GERAL"),
+        now.year,
+        now.month,
+    )
+    if erro:
+        return None, erro
+
+    caminho_absoluto = os.path.join(current_app.config["UPLOAD_FOLDER"], caminho_relativo)
+    tamanho = os.path.getsize(caminho_absoluto)
     status_inicial = "aprovado" if confirmado else "em_elaboracao"
     protocolo = gerar_protocolo(now.year)
     nome_original = file.filename
@@ -170,11 +167,10 @@ def criar_documento(file, metadados, usuario, origem, confirmado=False):
             evento_historico(status_inicial, usuario, "Documento criado", data=now)
         ],
         "nome_original": nome_original,
-        "arquivo": nome_original,
+        "arquivo": caminho_relativo,
         "arquivo_nome": nome_original,
         "arquivo_tipo": "application/pdf",
-        "arquivo_tamanho": len(dados_pdf),
-        "arquivo_dados": Binary(dados_pdf),
+        "arquivo_tamanho": tamanho,
         "anexado_por": usuario,
         "origem": origem,
         "protegido_exclusao": confirmado,
@@ -188,7 +184,15 @@ def criar_documento(file, metadados, usuario, origem, confirmado=False):
         "hora": now.strftime("%H:%M"),
     }
 
-    resultado = db.documents.insert_one(doc)
+    try:
+        resultado = db.documents.insert_one(doc)
+    except Exception:
+        try:
+            os.remove(caminho_absoluto)
+        except OSError:
+            pass
+        raise
+
     doc["_id"] = resultado.inserted_id
     return doc, None
 
@@ -300,14 +304,9 @@ def visualizar_pdf(id):
     if not doc:
         return jsonify({"error": "Documento não encontrado"}), 404
 
-    dados = doc.get("arquivo_dados")
-    if dados is None:
-        return jsonify({
-            "error": "Este PDF antigo não está salvo no MongoDB. Reenvie o documento."
-        }), 404
-
     nome = doc.get("arquivo_nome") or doc.get("nome_original") or "documento.pdf"
     nome_seguro = nome.replace('"', "").replace("\r", "").replace("\n", "")
+    caminho_relativo = doc.get("arquivo")
 
     registrar_auditoria("visualizar_documento", request.current_user["email"], {
         "documento_id": id,
@@ -315,16 +314,34 @@ def visualizar_pdf(id):
         "arquivo": nome_seguro,
     })
 
-    return Response(
-        bytes(dados),
-        status=200,
-        mimetype=doc.get("arquivo_tipo") or "application/pdf",
-        headers={
-            "Content-Disposition": f'inline; filename="{nome_seguro}"',
-            "Cache-Control": "no-store, private",
-            "X-Content-Type-Options": "nosniff",
-        },
-    )
+    if caminho_relativo:
+        pasta_base = os.path.realpath(current_app.config["UPLOAD_FOLDER"])
+        caminho_absoluto = os.path.realpath(os.path.join(pasta_base, caminho_relativo))
+        if caminho_absoluto.startswith(pasta_base + os.sep) and os.path.isfile(caminho_absoluto):
+            return send_from_directory(
+                os.path.dirname(caminho_absoluto),
+                os.path.basename(caminho_absoluto),
+                mimetype=doc.get("arquivo_tipo") or "application/pdf",
+                as_attachment=False,
+                download_name=nome_seguro,
+                max_age=0,
+            )
+
+    # Compatibilidade com documentos antigos que ainda guardam o PDF no MongoDB.
+    dados = doc.get("arquivo_dados")
+    if dados is not None:
+        return Response(
+            bytes(dados),
+            status=200,
+            mimetype=doc.get("arquivo_tipo") or "application/pdf",
+            headers={
+                "Content-Disposition": f'inline; filename="{nome_seguro}"',
+                "Cache-Control": "no-store, private",
+                "X-Content-Type-Options": "nosniff",
+            },
+        )
+
+    return jsonify({"error": "Arquivo PDF não encontrado no armazenamento"}), 404
 
 
 @doc_routes.route("/documents/<id>/status", methods=["PATCH"])
@@ -460,15 +477,10 @@ def delete_doc(id):
     doc = db.documents.find_one({"_id": ObjectId(id)})
     if not doc:
         return jsonify({"error": "Documento não encontrado"}), 404
-    if doc.get("status") == "arquivado":
-        return jsonify({"error": "Documentos arquivados não podem ser excluídos"}), 409
-
-    db.documents.delete_one({"_id": ObjectId(id)})
-    registrar_auditoria("delete_documento_financeiro", request.current_user["email"], {
-        "documento_id": id, "protocolo": doc.get("protocolo"), "nome": doc.get("nome"),
-        "arquivo": doc.get("arquivo"),
-    })
-    return jsonify({"msg": "Removido com sucesso"}), 200
+    arquivar_documento(doc, request.current_user["email"], motivo="Exclusão manual")
+    return jsonify({
+        "msg": "Documento movido para Arquivados. Será excluído definitivamente após 6 meses."
+    }), 200
 
 
 @doc_routes.route("/files/<path:filename>", methods=["GET"])

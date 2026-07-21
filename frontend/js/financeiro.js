@@ -426,7 +426,7 @@ async function salvarEdicao() {
 }
 
 async function excluirDocumento(id) {
-  if (!confirm("Tem certeza que deseja excluir este documento?")) return
+  if (!confirm("Deseja mover este documento para Arquivados? Ele ficará lá por 6 meses.")) return
 
   const data = await apiFetch(`/documents/${id}?usuario=${encodeURIComponent(getUser())}`, {
     method: "DELETE"
@@ -437,7 +437,7 @@ async function excluirDocumento(id) {
     return
   }
 
-  alert("Documento excluído com sucesso")
+  alert(data?.msg || "Documento movido para Arquivados")
   fecharModal()
   carregarDados()
 }

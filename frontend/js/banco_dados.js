@@ -149,6 +149,11 @@ function renderTabela() {
         </button>
         </td>
         <td>${doc.embalagem || "Sem armazenamento"}</td>
+        <td>
+          <button class="bd-btn-arquivar-item" onclick="arquivarDocumento('${doc._id}')">
+            🗑 Arquivar
+          </button>
+        </td>
       </tr>
     `
   })
@@ -250,7 +255,7 @@ function renderArquivados() {
   if (filtrados.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" style="text-align:center; padding:20px;">
+        <td colspan="7" style="text-align:center; padding:20px;">
           Nenhum documento arquivado encontrado.
         </td>
       </tr>
@@ -266,9 +271,13 @@ function renderArquivados() {
         <td>${doc.modulo || "-"}</td>
         <td>${formatarDataArquivamento(doc)}</td>
         <td>${calcularExpiraEm(doc)}</td>
+        <td>${formatarContagemRegressiva(doc)}</td>
         <td>
           <button class="bd-btn-restaurar" onclick="restaurarArquivamento('${doc._id}')">
             ↩ Restaurar
+          </button>
+          <button class="bd-btn-excluir-definitivo" onclick="excluirArquivamentoDefinitivamente('${doc._id}')">
+            🗑 Apagar definitivamente
           </button>
         </td>
       </tr>
@@ -290,6 +299,48 @@ function calcularExpiraEm(doc) {
   data.setMonth(data.getMonth() + 6)
 
   return data.toLocaleDateString("pt-BR")
+}
+
+function formatarContagemRegressiva(doc) {
+  let segundos = Number(doc.segundos_restantes)
+  if (!Number.isFinite(segundos)) {
+    const expira = doc.data_exclusao_definitiva
+      ? new Date(doc.data_exclusao_definitiva)
+      : null
+    segundos = expira ? Math.max(0, Math.floor((expira.getTime() - Date.now()) / 1000)) : 0
+  }
+
+  if (segundos <= 0) return "Aguardando exclusão automática"
+
+  const dias = Math.floor(segundos / 86400)
+  const horas = Math.floor((segundos % 86400) / 3600)
+  return `${dias} dia(s) e ${horas} hora(s)`
+}
+
+async function arquivarDocumento(id) {
+  if (!confirm("Deseja mover este documento para Arquivados? Ele ficará lá por 6 meses.")) return
+
+  const data = await apiFetch(`/documents/${id}`, { method: "DELETE" })
+  if (data?.error) {
+    alert(data.error)
+    return
+  }
+
+  alert(data?.msg || "Documento movido para Arquivados")
+  await carregarDados()
+}
+
+async function excluirArquivamentoDefinitivamente(id) {
+  if (!confirm("ATENÇÃO: esta ação apagará o documento definitivamente e não poderá ser desfeita. Continuar?")) return
+
+  const data = await apiFetch(`/arquivamentos/${id}`, { method: "DELETE" })
+  if (data?.error) {
+    alert(data.error)
+    return
+  }
+
+  alert("Documento excluído definitivamente")
+  await carregarArquivados()
 }
 
 async function restaurarArquivamento(id) {

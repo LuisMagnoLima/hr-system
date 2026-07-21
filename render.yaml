@@ -1,17 +1,14 @@
 services:
   - type: web
-    name: sigmaturing
-    runtime: python
+    name: hr-system-inagro
+    runtime: docker
     plan: free
     autoDeploy: true
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: gunicorn --chdir backend app:app --bind 0.0.0.0:$PORT --workers 1 --threads 4 --timeout 120
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /health
     envVars:
       - key: FLASK_ENV
         value: production
-      - key: PYTHON_VERSION
-        value: 3.13.5
       - key: SECRET_KEY
         generateValue: true
       - key: MONGO_URI
@@ -19,9 +16,9 @@ services:
       - key: DB_NAME
         value: hr-system
       - key: MAX_FILE_SIZE
-        value: "104857600"
+        value: "1073741824"
       - key: UPLOAD_FOLDER
-        value: uploads
+        value: /tmp/uploads
       - key: COOKIE_NAME
         value: hr_session
       - key: COOKIE_SECURE
@@ -31,7 +28,9 @@ services:
       - key: TOKEN_HOURS
         value: "8"
       - key: ENABLE_SCHEDULER
-        value: "false"
+        value: "true"
+      - key: ALLOWED_ORIGINS
+        value: https://hr-system-inagro.onrender.com
       - key: MONGO_SERVER_SELECTION_TIMEOUT_MS
         value: "5000"
       - key: MONGO_CONNECT_TIMEOUT_MS

@@ -1,0 +1,49 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: inagro_protocolos_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MONGO_URI: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${DB_NAME}?authSource=admin
+      UPLOAD_FOLDER: /app/backend/uploads
+    ports:
+      - "5000:5000"
+    volumes:
+      - uploads_data:/app/backend/uploads
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - inagro_network
+
+  mongodb:
+    image: mongo:8.0
+    container_name: inagro_protocolos_mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:27018:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --username \"$$MONGO_INITDB_ROOT_USERNAME\" --password \"$$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval \"db.adminCommand('ping').ok\" | grep 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks:
+      - inagro_network
+
+volumes:
+  mongodb_data:
+  uploads_data:
+
+networks:
+  inagro_network:
+    driver: bridge
