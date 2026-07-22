@@ -22,11 +22,31 @@ function preencherUsuario(payload) {
   }
 }
 
+function configurarAtalhos(payload) {
+  const btnDashboard = document.getElementById("btnDashboard")
+  const btnBancoDados = document.getElementById("btnBancoDados")
+  const permissoes = Array.isArray(payload.permissions) ? payload.permissions : []
+
+  const eAdmin = payload.role === "admin"
+  const podeAcessarBanco = eAdmin || permissoes.includes("banco_dados")
+
+  if (btnDashboard) {
+    // A dashboard continua exclusiva para administradores.
+    btnDashboard.hidden = !eAdmin
+  }
+
+  if (btnBancoDados) {
+    // Administradores e usuários com a permissão banco_dados veem este botão.
+    btnBancoDados.hidden = !podeAcessarBanco
+  }
+}
+
 function renderMenu() {
   const payload = getPayload()
   if (!payload) return
 
   preencherUsuario(payload)
+  configurarAtalhos(payload)
 
   const container = document.getElementById("menuCards")
   if (!container) return
@@ -100,6 +120,14 @@ function go(modulo) {
 
 function logout() {
   logoutSistema()
+}
+
+function abrirDashboard() {
+  window.location.href = "dashboard.html"
+}
+
+function abrirBancoDados() {
+  window.location.href = "banco_dados.html"
 }
 
 function abrirNotificacoes() {

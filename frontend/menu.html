@@ -15,6 +15,18 @@
   <p class="menu-user-label">Usuário logado:</p>
   <p class="menu-user-email" id="userEmail">email@exemplo.com</p>
 
+  <nav id="menuAtalhos" class="menu-shortcuts" aria-label="Atalhos principais">
+    <button id="btnDashboard" class="menu-shortcut-button" type="button" onclick="abrirDashboard()" hidden>
+      <span aria-hidden="true">📊</span>
+      <span>Dashboard</span>
+    </button>
+
+    <button id="btnBancoDados" class="menu-shortcut-button" type="button" onclick="abrirBancoDados()" hidden>
+      <span aria-hidden="true">🗄️</span>
+      <span>Banco de Dados</span>
+    </button>
+  </nav>
+
   <div class="menu-notification-box" onclick="abrirNotificacoes()">
   <span class="menu-bell">🔔</span>
   <span>Protocolos Pendentes</span>

@@ -18,6 +18,22 @@ function getPayload() {
   }
 }
 
+function protegerBancoDados() {
+  const payload = getPayload()
+  if (!payload) return false
+
+  const permissoes = Array.isArray(payload.permissions) ? payload.permissions : []
+  const podeAcessar = payload.role === "admin" || permissoes.includes("banco_dados")
+
+  if (!podeAcessar) {
+    alert("Você não tem acesso ao Banco de Dados.")
+    window.location.href = "menu.html"
+    return false
+  }
+
+  return true
+}
+
 function preencherUsuario() {
   const payload = getPayload()
   if (!payload) return
@@ -443,5 +459,7 @@ document.addEventListener("keydown", function(event) {
   if (event.key === "Escape") fecharPdfBanco()
 })
 
-preencherUsuario()
-carregarDados()
+if (protegerBancoDados()) {
+  preencherUsuario()
+  carregarDados()
+}

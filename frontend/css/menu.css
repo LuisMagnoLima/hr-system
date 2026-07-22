@@ -43,6 +43,40 @@ body {
   word-break: break-word;
 }
 
+
+.menu-shortcuts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu-shortcut-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid #dce3f1;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1f2a44;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.menu-shortcut-button:hover {
+  background: #eef3ff;
+  border-color: #b8c6ec;
+  transform: translateY(-1px);
+}
+
+.menu-shortcut-button[hidden] {
+  display: none;
+}
+
 .menu-logout {
   margin-top: 20px;
   padding: 12px 16px;
