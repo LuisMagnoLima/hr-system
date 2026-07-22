@@ -15,6 +15,7 @@
     <h2>HR System</h2>
     <p>Dashboard Admin</p>
 
+    <button onclick="irUsuarios()">👥 Gestão de Usuários</button>
     <button onclick="irBanco()">📁 Banco de Dados</button>
     <button onclick="irAuditoria()">📜 Auditoria</button>
     <button onclick="irFinanceiro()">💰 Financeiro</button>
@@ -85,90 +86,6 @@
       </div>
     </section>
 
-    <section class="users-box">
-  <div class="users-header">
-    <div>
-      <h2>Gestão de Usuários</h2>
-      <p>Crie, edite, remova usuários e altere permissões.</p>
-    </div>
-
-    <button onclick="abrirModalUsuario()">+ Novo Usuário</button>
-  </div>
-
-  <div class="users-filtros">
-    <input
-      id="filtroUsuarioBusca"
-      type="text"
-      placeholder="Buscar usuário por email..."
-      oninput="filtrarUsuariosUI()"
-    >
-
-    <select id="filtroUsuarioRole" onchange="filtrarUsuariosUI()">
-      <option value="">Todas as funções</option>
-      <option value="admin">Admin</option>
-      <option value="operador">Operador</option>
-      <option value="solicitante">Solicitante</option>
-    </select>
-  </div>
-
-  <p id="usuariosContador" class="users-contador">
-    0 usuário(s) encontrado(s)
-  </p>
-
-  <div class="users-table-wrap">
-    <table class="users-table">
-      <thead>
-        <tr>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Permissões</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="usuariosTabela"></tbody>
-    </table>
-  </div>
-
-  <div class="users-paginacao">
-    <button onclick="paginaUsuariosAnterior()">Anterior</button>
-    <div id="usuariosPageNumeros"></div>
-    <button onclick="proximaPaginaUsuarios()">Próximo</button>
-  </div>
-</section>
-
-<div id="modalUsuario" class="user-modal">
-  <div class="user-modal-content">
-    <span class="user-close" onclick="fecharModalUsuario()">&times;</span>
-
-    <h3 id="modalUsuarioTitulo">Novo Usuário</h3>
-
-    <input type="hidden" id="userId">
-
-    <label>Email</label>
-    <input id="userEmailInput" placeholder="email@empresa.com">
-
-    <label>Senha</label>
-    <input id="userSenhaInput" type="password" placeholder="Senha">
-
-    <label>Role</label>
-    <select id="userRoleInput">
-      <option value="operador">Operador</option>
-      <option value="solicitante">Solicitante</option>
-      <option value="admin">Admin</option>
-    </select>
-
-    <label>Permissões</label>
-    <div class="permissoes-grid">
-      <label><input type="checkbox" value="notas"> Notas</label>
-      <label><input type="checkbox" value="diarias"> Diárias</label>
-      <label><input type="checkbox" value="admissoes"> Admissão/Demissão</label>
-      <label><input type="checkbox" value="financeiro"> Financeiro</label>
-      <label><input type="checkbox" value="banco_dados"> Banco de Dados</label>
-    </div>
-
-    <button onclick="salvarUsuario()">Salvar Usuário</button>
-  </div>
-</div>
   </main>
 
 </div>
