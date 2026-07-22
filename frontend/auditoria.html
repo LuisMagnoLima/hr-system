@@ -64,19 +64,29 @@
 
     <input type="date" id="filtroData">
 
-    <select id="filtroLimite" title="Quantidade máxima de registros">
-      <option value="100">Exibir 0–100</option>
-      <option value="300">Exibir 0–300</option>
-      <option value="500">Exibir 0–500</option>
-      <option value="1000">Exibir 0–1000</option>
-      <option value="0">Exibir todos</option>
+    <select id="filtroLimite" title="Registros por página">
+      <option value="100">100 por página</option>
+      <option value="300">300 por página</option>
+      <option value="500">500 por página</option>
+      <option value="1000">1000 por página</option>
+      <option value="0">Todos</option>
     </select>
 
     <button onclick="carregarAuditoria()">Buscar</button>
     <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
   </div>
 
+  <div class="barra-resultados">
+    <span id="faixaRegistros">Mostrando 0 registros</span>
+    <div id="paginacaoTopo" class="paginacao"></div>
+  </div>
+
   <div id="lista"></div>
+
+  <div class="barra-resultados barra-inferior">
+    <span id="paginaAtualTexto"></span>
+    <div id="paginacaoRodape" class="paginacao"></div>
+  </div>
 </div>
 <script src="js/api.js"></script>
 <script src="js/auditoria.js"></script>

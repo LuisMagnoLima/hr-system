@@ -160,3 +160,150 @@ body {
   border: 1px dashed #d9dce5;
   color: #6c7280;
 }
+/* Visual compacto e paginação */
+.auditoria-container {
+  max-width: 1180px;
+  padding: 18px;
+}
+
+.auditoria-topo,
+.auditoria-resumo {
+  margin-bottom: 14px;
+}
+
+.resumo-card {
+  padding: 13px 15px;
+  border-radius: 10px;
+}
+
+.filtros {
+  background: #fff;
+  border: 1px solid #e8ebf2;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+
+.filtros input,
+.filtros select,
+.filtros button {
+  min-width: 0;
+  padding: 9px 11px;
+  border-radius: 8px;
+}
+
+#filtroUsuario { flex: 1 1 190px; }
+#filtroAcao { flex: 1 1 210px; }
+#filtroData { flex: 0 1 145px; }
+#filtroLimite { flex: 0 1 150px; }
+
+.barra-resultados {
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0;
+  color: #626a7a;
+  font-size: 13px;
+}
+
+.barra-inferior { margin-top: 12px; }
+
+.paginacao {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.paginacao button {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid #d9dce5;
+  border-radius: 7px;
+  background: #fff;
+  color: #33405c;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.paginacao button:hover:not(:disabled),
+.paginacao button.ativo {
+  background: #4f6df5;
+  border-color: #4f6df5;
+  color: #fff;
+}
+
+.paginacao button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+.reticencias {
+  padding: 0 3px;
+  color: #7b8290;
+}
+
+#lista { gap: 7px; }
+
+.card {
+  padding: 11px 13px;
+  border-radius: 9px;
+  border-left-width: 4px;
+  box-shadow: 0 2px 7px rgba(0,0,0,.04);
+}
+
+.card-cabecalho,
+.card-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.card-cabecalho {
+  justify-content: space-between;
+  margin-bottom: 7px;
+}
+
+.card-cabecalho h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.card-cabecalho time {
+  color: #707887;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.card-info {
+  font-size: 13px;
+  color: #4f5565;
+}
+
+.card details { margin-top: 7px; }
+.card summary {
+  color: #4f6df5;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.card .detalhes {
+  margin-top: 7px;
+  padding: 8px;
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .auditoria-container { padding: 12px; }
+  .auditoria-topo h1 { font-size: 21px; }
+  .barra-resultados { align-items: flex-start; flex-direction: column; }
+  .paginacao { justify-content: flex-start; }
+  .card-cabecalho { align-items: flex-start; flex-direction: column; gap: 3px; }
+}
