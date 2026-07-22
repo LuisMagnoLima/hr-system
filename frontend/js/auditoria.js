@@ -59,10 +59,12 @@ async function carregarAuditoria() {
   const usuario = document.getElementById("filtroUsuario").value.trim()
   const acao = document.getElementById("filtroAcao").value
   const dataFiltro = document.getElementById("filtroData").value
+  const limite = document.getElementById("filtroLimite").value
 
   let path = "/auditoria?"
   if (usuario) path += `usuario=${encodeURIComponent(usuario)}&`
   if (acao) path += `acao=${encodeURIComponent(acao)}&`
+  path += `limite=${encodeURIComponent(limite)}&`
 
   const dados = await apiFetch(path)
   if (!dados) return
@@ -100,6 +102,7 @@ function limparFiltros() {
   document.getElementById("filtroUsuario").value = ""
   document.getElementById("filtroAcao").value = ""
   document.getElementById("filtroData").value = ""
+  document.getElementById("filtroLimite").value = "100"
   carregarAuditoria()
 }
 

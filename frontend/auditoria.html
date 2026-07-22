@@ -64,6 +64,14 @@
 
     <input type="date" id="filtroData">
 
+    <select id="filtroLimite" title="Quantidade máxima de registros">
+      <option value="100">Exibir 0–100</option>
+      <option value="300">Exibir 0–300</option>
+      <option value="500">Exibir 0–500</option>
+      <option value="1000">Exibir 0–1000</option>
+      <option value="0">Exibir todos</option>
+    </select>
+
     <button onclick="carregarAuditoria()">Buscar</button>
     <button class="btn-limpar" onclick="limparFiltros()">Limpar</button>
   </div>
