@@ -1,0 +1,104 @@
+.pdf-dropzone {
+  border: 2px dashed #cfd7e6;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  background: #fafbfd;
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+  cursor: pointer;
+}
+
+.pdf-dropzone:hover,
+.pdf-dropzone.is-dragover {
+  border-color: #28a745;
+  background: #f0fbf3;
+}
+
+.pdf-dropzone.is-dragover {
+  transform: scale(1.01);
+}
+
+.pdf-dropzone.is-invalid {
+  border-color: #dc3545;
+  background: #fff5f5;
+}
+
+.pdf-dropzone-icon {
+  font-size: 28px;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.pdf-dropzone-title {
+  font-weight: 700;
+  color: #1f2a44;
+  margin-bottom: 3px;
+}
+
+.pdf-dropzone-help {
+  font-size: 12px;
+  color: #697386;
+  margin-bottom: 10px;
+}
+
+.pdf-dropzone input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pdf-dropzone-button {
+  display: inline-block;
+  border: 1px solid #28a745;
+  border-radius: 8px;
+  padding: 7px 12px;
+  color: #13752b;
+  background: #fff;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.pdf-dropzone-file {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #edf8f0;
+  color: #1f2a44;
+  text-align: left;
+}
+
+.pdf-dropzone.has-file .pdf-dropzone-file {
+  display: flex;
+}
+
+.pdf-dropzone-file-name {
+  display: block;
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.pdf-dropzone-file-size {
+  display: block;
+  color: #697386;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.pdf-dropzone-remove {
+  border: 0;
+  background: transparent;
+  color: #b42318;
+  cursor: pointer;
+  font-weight: 700;
+  padding: 4px 6px;
+}

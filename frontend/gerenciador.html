@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Gerenciador</title>
   <link rel="stylesheet" href="css/gerenciador.css">
+<link rel="stylesheet" href="css/pdf-dropzone.css">
 </head>
 <body>
 
@@ -83,8 +84,19 @@
     <input type="text" id="embalagem" class="ger-input" placeholder="Digite embalagem">
 
     <label class="ger-label">Arquivo PDF</label>
-    <div class="ger-upload-box">
-      <input type="file" id="file" accept="application/pdf">
+    <div class="pdf-dropzone ger-upload-box">
+      <div class="pdf-dropzone-icon">📄</div>
+      <div class="pdf-dropzone-title">Arraste o PDF para cá</div>
+      <div class="pdf-dropzone-help">ou clique para selecionar no computador</div>
+      <span class="pdf-dropzone-button">Escolher arquivo</span>
+      <input type="file" id="file" accept="application/pdf,.pdf">
+      <div class="pdf-dropzone-file">
+        <div>
+          <span class="pdf-dropzone-file-name"></span>
+          <span class="pdf-dropzone-file-size"></span>
+        </div>
+        <button type="button" class="pdf-dropzone-remove">Remover</button>
+      </div>
     </div>
 
     <div id="uploadArea" class="upload-area" style="display:none;">
@@ -170,6 +182,7 @@
 </div>
 
 <script src="js/api.js"></script>
+<script src="js/pdf-dropzone.js"></script>
 <script src="js/gerenciador.js"></script>
 </body>
 </html>

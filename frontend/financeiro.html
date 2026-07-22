@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Financeiro</title>
   <link rel="stylesheet" href="css/financeiro.css">
+<link rel="stylesheet" href="css/pdf-dropzone.css">
 
 </head>
 
@@ -105,7 +106,20 @@
       <option value="regional">Regional</option>
     </select>
 
-    <input type="file" id="finFile" accept="application/pdf">
+    <div class="pdf-dropzone">
+      <div class="pdf-dropzone-icon">📄</div>
+      <div class="pdf-dropzone-title">Arraste o PDF para cá</div>
+      <div class="pdf-dropzone-help">ou clique para selecionar no computador</div>
+      <span class="pdf-dropzone-button">Escolher arquivo</span>
+      <input type="file" id="finFile" accept="application/pdf,.pdf">
+      <div class="pdf-dropzone-file">
+        <div>
+          <span class="pdf-dropzone-file-name"></span>
+          <span class="pdf-dropzone-file-size"></span>
+        </div>
+        <button type="button" class="pdf-dropzone-remove">Remover</button>
+      </div>
+    </div>
 
     <button onclick="uploadFinanceiro()">Salvar</button>
   </div>
@@ -166,6 +180,7 @@
 </div>
 
 <script src="js/api.js"></script>
+<script src="js/pdf-dropzone.js"></script>
 <script src="js/financeiro.js"></script>
 
 </body>
