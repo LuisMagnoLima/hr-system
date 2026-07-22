@@ -11,7 +11,7 @@ services:
       MONGO_URI: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/${DB_NAME}?authSource=admin
       UPLOAD_FOLDER: /app/backend/uploads
     ports:
-      - "5000:5000"
+      - "5000:10000"
     volumes:
       - uploads_data:/app/backend/uploads
     depends_on:
