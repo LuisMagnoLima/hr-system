@@ -283,7 +283,7 @@ async function confirmarDocumento(id, confirmado) {
 function abrirModalEditar(doc) {
   document.getElementById("editId").value = doc._id
   document.getElementById("editNome").value = doc.nome || ""
-  document.getElementById("editEmbalagem").value = doc.embalagem || ""
+  document.getElementById("editObservação").value = doc.observacao || ""
   document.getElementById("editDepartamento").value = doc.departamento || "SAFE"
   document.getElementById("editModulo").value = doc.modulo || "notas"
   document.getElementById("editTipo").value = doc.tipo || "ativo"
@@ -397,7 +397,7 @@ async function salvarEdicao() {
   const dados = {
     usuario: getUser(),
     nome: document.getElementById("editNome").value.trim(),
-    embalagem: document.getElementById("editEmbalagem").value.trim(),
+    observacao: document.getElementById("editObservação").value.trim(),
     departamento: document.getElementById("editDepartamento").value,
     modulo: document.getElementById("editModulo").value,
     tipo: document.getElementById("editTipo").value
@@ -457,7 +457,7 @@ function fecharModal() {
 async function uploadFinanceiro() {
   const file = document.getElementById("finFile").files[0]
   const nome = document.getElementById("finNome").value.trim()
-  const embalagem = document.getElementById("finEmbalagem").value.trim()
+  const observacao = document.getElementById("finObservação").value.trim()
   const departamento = document.getElementById("finDepartamento").value
   const modulo = document.getElementById("finModulo").value
   const tipo = document.getElementById("finTipo").value
@@ -475,7 +475,7 @@ async function uploadFinanceiro() {
   const formData = new FormData()
   formData.append("file", file)
   formData.append("nome", nome)
-  formData.append("embalagem", embalagem)
+  formData.append("observacao", observacao)
   formData.append("departamento", departamento)
   formData.append("modulo", modulo)
   formData.append("tipo", tipo)
@@ -494,7 +494,7 @@ async function uploadFinanceiro() {
   alert("Documento financeiro adicionado com sucesso")
 
   document.getElementById("finNome").value = ""
-  document.getElementById("finEmbalagem").value = ""
+  document.getElementById("finObservação").value = ""
   document.getElementById("finFile").value = ""
 
   fecharModalCriar()

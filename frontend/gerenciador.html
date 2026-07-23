@@ -48,12 +48,7 @@
       </select>
     </div>
 
-    <div class="ger-tabs">
-      <button class="ger-tab active" onclick="setFiltro('ativo', this)">ATIVO</button>
-      <button class="ger-tab" onclick="setFiltro('inativo', this)">INATIVO</button>
-      <button class="ger-tab" onclick="setFiltro('oficio', this)">OFÍCIO</button>
-      <button id="btnRegional" class="ger-tab" onclick="setFiltro('regional', this)">REGIONAL</button>
-    </div>
+    <div id="gerTabs" class="ger-tabs"></div>
 
     <div class="ger-info-row">
       <p id="contadorDocs">0 documento(s) encontrado(s)</p>
@@ -80,8 +75,8 @@
     <label class="ger-label">Nome</label>
     <input type="text" id="nome" class="ger-input" placeholder="Digite nome">
 
-    <label class="ger-label">Embalagem</label>
-    <input type="text" id="embalagem" class="ger-input" placeholder="Digite embalagem">
+    <label class="ger-label">Observação</label>
+    <textarea id="observacao" class="ger-input" rows="4" maxlength="2000" placeholder="Digite os detalhes ou observações do arquivo"></textarea>
 
     <label class="ger-label">Arquivo PDF</label>
     <div class="pdf-dropzone ger-upload-box">
@@ -149,6 +144,23 @@
       <h3>Histórico do documento</h3>
       <div id="detalheHistorico" class="ger-timeline"></div>
     </div>
+  </div>
+</div>
+
+<div id="modalEditar" class="ger-modal">
+  <div class="ger-modal-content">
+    <div class="ger-modal-header">
+      <h2>Editar arquivo</h2>
+      <button class="ger-close-btn" type="button" onclick="fecharEdicao()">✕</button>
+    </div>
+    <input type="hidden" id="editDocumentoId">
+    <label class="ger-label">Nome</label>
+    <input type="text" id="editNome" class="ger-input" placeholder="Nome do documento">
+    <label class="ger-label">Observação</label>
+    <textarea id="editObservacao" class="ger-input" rows="4" maxlength="2000" placeholder="Detalhes ou observações do arquivo"></textarea>
+    <label class="ger-label">Tipo</label>
+    <select id="editTipo" class="ger-input"></select>
+    <button class="ger-primary-btn ger-full-btn" type="button" onclick="salvarEdicao()">Salvar alterações</button>
   </div>
 </div>
 

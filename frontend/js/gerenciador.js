@@ -1,5 +1,29 @@
 let filtroAtual = "ativo"
 
+function getPayloadAtual() {
+  try { return JSON.parse(sessionStorage.getItem("hr_user") || "{}") } catch { return {} }
+}
+
+function tiposPermitidosModulo(modulo = getModuloAtual()) {
+  return modulo === "admissoes" ? ["ativo", "inativo"] : ["ativo", "pendente"]
+}
+
+function podeEditarDocumento(doc) {
+  const user = getPayloadAtual()
+  const permissoes = Array.isArray(user.permissions) ? user.permissions : []
+  return user.role === "admin" || permissoes.includes("banco_dados") || permissoes.includes(doc?.modulo || getModuloAtual())
+}
+
+function renderizarAbasTipo() {
+  const container = document.getElementById("gerTabs")
+  if (!container) return
+  const tipos = tiposPermitidosModulo()
+  if (!tipos.includes(filtroAtual)) filtroAtual = tipos[0]
+  container.innerHTML = tipos.map(tipo => `
+    <button class="ger-tab ${tipo === filtroAtual ? "active" : ""}" onclick="setFiltro('${tipo}', this)">${tipo.toUpperCase()}</button>
+  `).join("")
+}
+
 function bloquearSolicitante() {
   const token = sessionStorage.getItem("hr_user")
   if (!token) return
@@ -56,28 +80,7 @@ function atualizarTitulo() {
   if (titulo) titulo.innerText = `Gerenciador - ${dep}`
 }
 
-function atualizarBotoesGerenciador() {
-  const departamento = getDepartamentoAtual().toUpperCase()
-  const btnRegional = document.getElementById("btnRegional")
-
-  if (!btnRegional) return
-
-  if (departamento === "AGERP") {
-    btnRegional.style.display = "inline-flex"
-  } else {
-    btnRegional.style.display = "none"
-
-    if (filtroAtual === "regional") {
-      filtroAtual = "ativo"
-
-      document.querySelectorAll(".ger-tab").forEach(btn => {
-        btn.classList.remove("active")
-      })
-
-      document.querySelector(".ger-tab")?.classList.add("active")
-    }
-  }
-}
+function atualizarBotoesGerenciador() { renderizarAbasTipo() }
 
 function atualizarStatusVisual() {
   const tipoUpper = filtroAtual.toUpperCase()
@@ -97,12 +100,12 @@ function abrirModal() {
   atualizarStatusVisual()
 
   const nome = document.getElementById("nome")
-  const embalagem = document.getElementById("embalagem")
+  const observacao = document.getElementById("observacao")
   const file = document.getElementById("file")
   const modal = document.getElementById("modal")
 
   if (nome) nome.value = ""
-  if (embalagem) embalagem.value = ""
+  if (observacao) observacao.value = ""
   if (file) file.value = ""
   resetarUploadProgress()
   if (modal) modal.style.display = "flex"
@@ -131,7 +134,7 @@ function aplicarCorBotao() {
 async function upload() {
   const file = document.getElementById("file").files[0]
   const nome = document.getElementById("nome").value.trim()
-  const embalagem = document.getElementById("embalagem").value.trim()
+  const observacao = document.getElementById("observacao").value.trim()
 
   if (!file) {
     alert("Selecione um arquivo PDF")
@@ -149,7 +152,7 @@ async function upload() {
   const formData = new FormData()
   formData.append("file", file)
   formData.append("nome", nome)
-  formData.append("embalagem", embalagem)
+  formData.append("observacao", observacao)
   formData.append("usuario", getUser())
   formData.append("tipo", filtroAtual)
   formData.append("modulo", modulo)
@@ -380,20 +383,21 @@ async function loadDocs() {
           <span class="ger-badge ger-badge-tipo">${escapeHtml((doc.tipo || "").toUpperCase())}</span>
           <span class="ger-badge ger-badge-status">${escapeHtml(doc.status_label || doc.status || "")}</span>
         </div>
-        <p>📦 ${escapeHtml(doc.embalagem || "Sem embalagem")}</p>
+        <p>🔎 ${escapeHtml(doc.observacao || doc.embalagem || "Nenhuma observação")}</p>
         <p>👤 ${escapeHtml(doc.anexado_por || "Não informado")}</p>
         <p>📂 ${escapeHtml(doc.departamento || "Não informado")}</p>
         <p>➡ Responsável: ${escapeHtml(doc.responsavel_atual || "Não informado")}</p>
         <div class="ger-card-actions">
           <button class="ger-detail-btn" type="button">Detalhes</button>
           <button class="ger-download-btn" type="button">Abrir PDF</button>
+          ${podeEditarDocumento(doc) ? '<button class="ger-edit-btn" type="button">Editar</button>' : ''}
           <button class="ger-delete-btn" type="button">🗑</button>
         </div>`
 
-      const botoes = card.querySelectorAll("button")
-      botoes[0].addEventListener("click", () => abrirDetalhes(doc._id))
-      botoes[1].addEventListener("click", () => abrirPdf(doc))
-      botoes[2].addEventListener("click", () => remover(doc._id))
+      card.querySelector(".ger-detail-btn")?.addEventListener("click", () => abrirDetalhes(doc._id))
+      card.querySelector(".ger-download-btn")?.addEventListener("click", () => abrirPdf(doc))
+      card.querySelector(".ger-edit-btn")?.addEventListener("click", () => abrirEdicao(doc))
+      card.querySelector(".ger-delete-btn")?.addEventListener("click", () => remover(doc._id))
       lista.appendChild(card)
     })
   } catch (error) {
@@ -450,6 +454,7 @@ async function abrirDetalhes(id) {
       ["Secretaria", doc.departamento],
       ["Módulo", doc.modulo],
       ["Tipo", doc.tipo],
+      ["Observação", doc.observacao || doc.embalagem],
       ["Criado por", doc.anexado_por],
       ["Responsável atual", doc.responsavel_atual],
       ["Data de criação", formatarDataFluxo(doc.data_envio)],
@@ -507,6 +512,53 @@ async function salvarNovoStatus() {
     await loadDocs()
   } catch (error) {
     alert(error.message || "Erro ao atualizar o status")
+  }
+}
+
+
+function abrirEdicao(doc) {
+  if (!podeEditarDocumento(doc)) {
+    alert("Você não tem permissão para editar este arquivo")
+    return
+  }
+  document.getElementById("editDocumentoId").value = doc._id
+  document.getElementById("editNome").value = doc.nome || ""
+  document.getElementById("editObservacao").value = doc.observacao || doc.embalagem || ""
+  const select = document.getElementById("editTipo")
+  const tipos = tiposPermitidosModulo(doc.modulo)
+  select.innerHTML = tipos.map(tipo => `<option value="${tipo}">${tipo.toUpperCase()}</option>`).join("")
+  select.value = tipos.includes(doc.tipo) ? doc.tipo : tipos[0]
+  select.dataset.modulo = doc.modulo || getModuloAtual()
+  select.dataset.departamento = doc.departamento || getDepartamentoAtual()
+  document.getElementById("modalEditar").style.display = "flex"
+}
+
+function fecharEdicao() {
+  const modal = document.getElementById("modalEditar")
+  if (modal) modal.style.display = "none"
+}
+
+async function salvarEdicao() {
+  const id = document.getElementById("editDocumentoId").value
+  const select = document.getElementById("editTipo")
+  const dados = {
+    nome: document.getElementById("editNome").value.trim(),
+    observacao: document.getElementById("editObservacao").value.trim(),
+    tipo: select.value,
+    modulo: select.dataset.modulo || getModuloAtual(),
+    departamento: select.dataset.departamento || getDepartamentoAtual()
+  }
+  if (!dados.nome) { alert("Digite o nome do documento"); return }
+  try {
+    await apiFetch(`/documents/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dados)
+    })
+    fecharEdicao()
+    await loadDocs()
+  } catch (error) {
+    alert(error.message || "Erro ao editar o arquivo")
   }
 }
 
@@ -609,15 +661,18 @@ window.onclick = function(event) {
   const modal = document.getElementById("modal")
   const modalDetalhes = document.getElementById("modalDetalhes")
   const modalPdf = document.getElementById("modalPdf")
+  const modalEditar = document.getElementById("modalEditar")
   if (event.target === modal) fecharModal()
   if (event.target === modalDetalhes) fecharDetalhes()
   if (event.target === modalPdf) fecharPdf()
+  if (event.target === modalEditar) fecharEdicao()
 }
 
 document.addEventListener("keydown", function(e) {
   if (e.key === "Escape") {
     fecharModal()
     fecharDetalhes()
+    fecharEdicao()
     fecharPdf()
   }
 })

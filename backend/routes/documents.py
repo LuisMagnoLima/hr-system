@@ -16,7 +16,7 @@ from utils.permission_utils import login_required, permission_required
 doc_routes = Blueprint("documents", __name__)
 db = get_database()
 
-TIPOS_DOCUMENTO = {"ativo", "inativo", "oficio", "regional"}
+TIPOS_DOCUMENTO = {"ativo", "inativo", "pendente"}
 MODULOS_DOCUMENTO = {"notas", "diarias", "admissoes"}
 STATUS_DOCUMENTO = {
     "em_elaboracao": "Em elaboração",
@@ -77,6 +77,8 @@ def normalizar_documento_antigo(documento):
         alteracoes["responsavel_atual"] = documento.get("anexado_por")
     if not documento.get("ultima_atualizacao"):
         alteracoes["ultima_atualizacao"] = now
+    if "observacao" not in documento:
+        alteracoes["observacao"] = (documento.get("embalagem") or "").strip()
     if not documento.get("historico"):
         alteracoes["historico"] = [
             evento_historico(
@@ -98,12 +100,33 @@ def serializar_documento(documento):
     # Nunca envia os bytes do PDF nas respostas JSON.
     documento.pop("arquivo_dados", None)
     documento["_id"] = str(documento["_id"])
+    documento["observacao"] = documento.get("observacao") or documento.get("embalagem") or ""
     documento["status_label"] = STATUS_DOCUMENTO.get(
         documento.get("status"), documento.get("status", "")
     )
     for item in documento.get("historico", []):
         item["status_label"] = STATUS_DOCUMENTO.get(item.get("status"), item.get("status", ""))
     return documento
+
+
+def tipos_permitidos_modulo(modulo):
+    return {"ativo", "inativo"} if modulo == "admissoes" else {"ativo", "pendente"}
+
+
+def usuario_pode_editar_documento(user, documento):
+    permissoes = user.get("permissions", [])
+    return (
+        user.get("role") == "admin"
+        or "banco_dados" in permissoes
+        or documento.get("modulo") in permissoes
+    )
+
+
+def validar_tipo_por_modulo(tipo, modulo):
+    if tipo not in tipos_permitidos_modulo(modulo):
+        permitidos = ", ".join(sorted(tipos_permitidos_modulo(modulo)))
+        return f"Tipo inválido para este módulo. Permitidos: {permitidos}"
+    return None
 
 
 def validar_metadados_documento(origem):
@@ -118,12 +141,15 @@ def validar_metadados_documento(origem):
         return None, "Tipo de documento inválido"
     if modulo not in MODULOS_DOCUMENTO:
         return None, "Módulo inválido"
+    erro_tipo_modulo = validar_tipo_por_modulo(tipo, modulo)
+    if erro_tipo_modulo:
+        return None, erro_tipo_modulo
     if not db.secretarias.find_one({"sigla": secretaria, "ativa": True}):
         return None, "Secretaria inexistente ou inativa"
 
     return {
         "nome": nome,
-        "embalagem": (origem.get("embalagem") or "").strip(),
+        "observacao": (origem.get("observacao") or origem.get("embalagem") or "").strip(),
         "tipo": tipo,
         "departamento": secretaria,
         "secretaria": secretaria,
@@ -408,13 +434,15 @@ def atualizar_status(id):
 
 
 @doc_routes.route("/documents/<id>", methods=["PUT"])
-@permission_required("financeiro")
+@login_required
 def editar_doc(id):
     if not ObjectId.is_valid(id):
         return jsonify({"error": "ID inválido"}), 400
     doc_antigo = db.documents.find_one({"_id": ObjectId(id)})
     if not doc_antigo:
         return jsonify({"error": "Documento não encontrado"}), 404
+    if not usuario_pode_editar_documento(request.current_user, doc_antigo):
+        return jsonify({"error": "Você não tem permissão para editar este arquivo"}), 403
 
     novos_dados, erro = validar_metadados_documento(request.get_json(silent=True) or {})
     if erro:
@@ -422,7 +450,7 @@ def editar_doc(id):
     now = agora_fortaleza()
     evento = evento_historico(doc_antigo.get("status", "em_elaboracao"), request.current_user["email"], "Metadados do documento editados", data=now)
     db.documents.update_one({"_id": ObjectId(id)}, {"$set": {**novos_dados, "ultima_atualizacao": now}, "$push": {"historico": evento}})
-    registrar_auditoria("editar_documento_financeiro", request.current_user["email"], {"documento_id": id, "protocolo": doc_antigo.get("protocolo")})
+    registrar_auditoria("editar_documento", request.current_user["email"], {"documento_id": id, "protocolo": doc_antigo.get("protocolo")})
     return jsonify({"msg": "Documento editado com sucesso"}), 200
 
 

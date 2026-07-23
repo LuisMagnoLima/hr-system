@@ -637,3 +637,6 @@ body.ger-modal-open {
     width: 100%;
   }
 }
+
+.ger-edit-btn { background:#f59e0b; color:#fff; border:0; border-radius:8px; padding:9px 13px; cursor:pointer; font-weight:700; }
+#observacao, #editObservacao { resize:vertical; min-height:90px; }

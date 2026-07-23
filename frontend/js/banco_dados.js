@@ -105,7 +105,7 @@ function filtrarDocumentos() {
     const email = (doc.anexado_por || "").toLowerCase()
     const departamento = (doc.departamento || "").toLowerCase()
     const modulo = (doc.modulo || "").toLowerCase()
-    const armazenamento = (doc.embalagem || "").toLowerCase()
+    const armazenamento = (doc.observacao || "").toLowerCase()
 
     return (
       nome.includes(busca) ||
@@ -164,7 +164,7 @@ function renderTabela() {
               Ver PDF
         </button>
         </td>
-        <td>${doc.embalagem || "Sem armazenamento"}</td>
+        <td>${doc.observacao || "Nenhuma observação"}</td>
         <td>
           <button class="bd-btn-arquivar-item" onclick="arquivarDocumento('${doc._id}')">
             🗑 Arquivar
