@@ -498,16 +498,21 @@ def confirmar_doc(id):
 
 
 @doc_routes.route("/documents/<id>", methods=["DELETE"])
-@permission_required("financeiro")
+@permission_required("financeiro", "banco_dados")
 def delete_doc(id):
     if not ObjectId.is_valid(id):
         return jsonify({"error": "ID inválido"}), 400
     doc = db.documents.find_one({"_id": ObjectId(id)})
     if not doc:
         return jsonify({"error": "Documento não encontrado"}), 404
-    arquivar_documento(doc, request.current_user["email"], motivo="Exclusão manual")
+    arquivado = arquivar_documento(
+        doc,
+        request.current_user["email"],
+        motivo="Arquivamento manual",
+    )
     return jsonify({
-        "msg": "Documento movido para Arquivados. Será excluído definitivamente após 6 meses."
+        "msg": "Documento movido para Arquivados. Será excluído definitivamente após 6 meses.",
+        "arquivamento_id": str(arquivado["_id"]),
     }), 200
 
 

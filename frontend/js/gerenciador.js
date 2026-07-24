@@ -131,6 +131,9 @@ function aplicarCorBotao() {
   btn.style.boxShadow = "0 2px 6px rgba(0,0,0,0.1)"
 }
 
+let uploadEmAndamento = null
+let uploadCanceladoPeloUsuario = false
+
 async function upload() {
   const file = document.getElementById("file").files[0]
   const nome = document.getElementById("nome").value.trim()
@@ -175,6 +178,12 @@ async function upload() {
       loadDocs()
     }, 900)
   } catch (err) {
+    if (err?.cancelado) {
+      resetarUploadProgress()
+      alert("Upload cancelado pelo usuário.")
+      return
+    }
+
     alert(err?.error || "Erro de conexão com servidor")
     marcarUploadErro()
   }
@@ -292,11 +301,25 @@ function resetarUploadProgress() {
   }
 }
 
+function cancelarUpload(exibirMensagem = true) {
+  if (!uploadEmAndamento) return
+
+  uploadCanceladoPeloUsuario = true
+  uploadEmAndamento.abort()
+  uploadEmAndamento = null
+
+  if (!exibirMensagem) {
+    resetarUploadProgress()
+  }
+}
+
 function enviarArquivoComProgresso(url, formData, file) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     const inicio = Date.now()
 
+    uploadEmAndamento = xhr
+    uploadCanceladoPeloUsuario = false
     prepararUploadProgress(file)
 
     xhr.upload.addEventListener("progress", event => {
@@ -304,6 +327,7 @@ function enviarArquivoComProgresso(url, formData, file) {
     })
 
     xhr.onload = () => {
+      uploadEmAndamento = null
       let data = {}
 
       try {
@@ -320,7 +344,13 @@ function enviarArquivoComProgresso(url, formData, file) {
     }
 
     xhr.onerror = () => {
+      uploadEmAndamento = null
       reject({ error: "Erro de conexão com servidor" })
+    }
+
+    xhr.onabort = () => {
+      uploadEmAndamento = null
+      reject({ cancelado: true })
     }
 
     xhr.open("POST", API_URL + url)

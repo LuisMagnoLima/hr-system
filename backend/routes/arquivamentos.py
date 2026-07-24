@@ -24,7 +24,7 @@ def agora_fortaleza():
 @arquivamentos_routes.route("/arquivamentos", methods=["GET"])
 @permission_required("banco_dados")
 def listar_arquivamentos():
-    docs = list(db.arquivamentos.find())
+    docs = list(db.arquivamentos.find().sort("data_arquivamento", -1))
 
     now = agora_fortaleza()
     for d in docs:
@@ -40,6 +40,9 @@ def listar_arquivamentos():
 @arquivamentos_routes.route("/arquivamentos/<id>/restaurar", methods=["POST"])
 @permission_required("banco_dados")
 def restaurar_arquivamento(id):
+    if not ObjectId.is_valid(id):
+        return jsonify({"error": "ID inválido"}), 400
+
     arquivado = db.arquivamentos.find_one({"_id": ObjectId(id)})
 
     if not arquivado:

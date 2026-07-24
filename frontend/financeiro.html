@@ -13,7 +13,8 @@
 <div class="financeiro-page">
 
   <div class="financeiro-top-actions">
-    <button class="btn-voltar-login" onclick="voltarLogin()">← Voltar para Login</button>
+    <button class="btn-navegacao btn-dashboard" type="button" onclick="voltarDashboard()">← Dashboard</button>
+    <button class="btn-navegacao btn-menu" type="button" onclick="voltarMenu()">☰ Menu</button>
   </div>
   
   <h1 class="financeiro-titulo">📅 Calendário Financeiro</h1>
@@ -120,7 +121,18 @@
       </div>
     </div>
 
-    <button onclick="uploadFinanceiro()">Salvar</button>
+    <div id="finUploadArea" class="fin-upload-area" style="display:none;">
+      <div class="fin-upload-status">
+        <strong id="finUploadNomeArquivo">arquivo.pdf</strong>
+        <span id="finUploadPorcentagem">0%</span>
+      </div>
+      <div class="fin-upload-bar"><div id="finUploadBarFill"></div></div>
+      <button type="button" class="fin-upload-cancel-btn" onclick="cancelarUploadFinanceiro()">
+        Cancelar upload
+      </button>
+    </div>
+
+    <button id="btnSalvarFinanceiro" onclick="uploadFinanceiro()">Salvar</button>
   </div>
 </div>
 

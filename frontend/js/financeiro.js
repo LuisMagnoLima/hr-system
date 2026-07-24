@@ -138,8 +138,12 @@ const docsFiltrados = docsDoMes
   }
 }
 
-function voltarLogin() {
-  logoutSistema()
+function voltarDashboard() {
+  window.location.href = "dashboard.html"
+}
+
+function voltarMenu() {
+  window.location.href = "menu.html"
 }
 
 function proximoMes() {
@@ -428,18 +432,15 @@ async function salvarEdicao() {
 async function excluirDocumento(id) {
   if (!confirm("Deseja mover este documento para Arquivados? Ele ficará lá por 6 meses.")) return
 
-  const data = await apiFetch(`/documents/${id}?usuario=${encodeURIComponent(getUser())}`, {
-    method: "DELETE"
-  })
-
-  if (data?.error) {
-    alert(data.error)
-    return
+  try {
+    const data = await apiFetch(`/documents/${id}`, { method: "DELETE" })
+    alert(data?.msg || "Documento movido para Arquivados")
+    fecharModal()
+    await carregarDados()
+  } catch (error) {
+    console.error("Erro ao arquivar documento:", error)
+    alert(error.message || "Não foi possível arquivar o documento")
   }
-
-  alert(data?.msg || "Documento movido para Arquivados")
-  fecharModal()
-  carregarDados()
 }
 
 function abrirModalCriar() {
@@ -447,11 +448,93 @@ function abrirModalCriar() {
 }
 
 function fecharModalCriar() {
+  if (uploadFinanceiroEmAndamento) cancelarUploadFinanceiro(false)
   document.getElementById("modalCriar").style.display = "none"
 }
 
 function fecharModal() {
   document.getElementById("modal").style.display = "none"
+}
+
+let uploadFinanceiroEmAndamento = null
+
+function prepararUploadFinanceiro(file) {
+  const area = document.getElementById("finUploadArea")
+  const nome = document.getElementById("finUploadNomeArquivo")
+  const porcentagem = document.getElementById("finUploadPorcentagem")
+  const barra = document.getElementById("finUploadBarFill")
+  const salvar = document.getElementById("btnSalvarFinanceiro")
+
+  if (area) area.style.display = "flex"
+  if (nome) nome.textContent = file.name
+  if (porcentagem) porcentagem.textContent = "0%"
+  if (barra) barra.style.width = "0%"
+  if (salvar) {
+    salvar.disabled = true
+    salvar.textContent = "Enviando..."
+  }
+}
+
+function resetarUploadFinanceiro() {
+  const area = document.getElementById("finUploadArea")
+  const porcentagem = document.getElementById("finUploadPorcentagem")
+  const barra = document.getElementById("finUploadBarFill")
+  const salvar = document.getElementById("btnSalvarFinanceiro")
+
+  if (area) area.style.display = "none"
+  if (porcentagem) porcentagem.textContent = "0%"
+  if (barra) barra.style.width = "0%"
+  if (salvar) {
+    salvar.disabled = false
+    salvar.textContent = "Salvar"
+  }
+}
+
+function cancelarUploadFinanceiro(exibirMensagem = true) {
+  if (!uploadFinanceiroEmAndamento) return
+  uploadFinanceiroEmAndamento.abort()
+  uploadFinanceiroEmAndamento = null
+  resetarUploadFinanceiro()
+  if (exibirMensagem) alert("Upload cancelado pelo usuário.")
+}
+
+function enviarFinanceiroComProgresso(formData, file) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    uploadFinanceiroEmAndamento = xhr
+    prepararUploadFinanceiro(file)
+
+    xhr.upload.addEventListener("progress", event => {
+      if (!event.lengthComputable) return
+      const valor = Math.round((event.loaded / event.total) * 100)
+      const porcentagem = document.getElementById("finUploadPorcentagem")
+      const barra = document.getElementById("finUploadBarFill")
+      if (porcentagem) porcentagem.textContent = valor + "%"
+      if (barra) barra.style.width = valor + "%"
+    })
+
+    xhr.onload = () => {
+      uploadFinanceiroEmAndamento = null
+      let data = {}
+      try { data = JSON.parse(xhr.responseText || "{}") }
+      catch (_) { data = { error: "Erro ao processar resposta do servidor" } }
+
+      if (xhr.status >= 200 && xhr.status < 300) resolve(data)
+      else reject(data)
+    }
+    xhr.onerror = () => {
+      uploadFinanceiroEmAndamento = null
+      reject({ error: "Erro de conexão com servidor" })
+    }
+    xhr.onabort = () => {
+      uploadFinanceiroEmAndamento = null
+      reject({ cancelado: true })
+    }
+
+    xhr.open("POST", API_URL + "/financeiro/upload")
+    xhr.withCredentials = true
+    xhr.send(formData)
+  })
 }
 
 async function uploadFinanceiro() {
@@ -462,15 +545,8 @@ async function uploadFinanceiro() {
   const modulo = document.getElementById("finModulo").value
   const tipo = document.getElementById("finTipo").value
 
-  if (!file) {
-    alert("Selecione um PDF")
-    return
-  }
-
-  if (!nome) {
-    alert("Digite o nome do documento")
-    return
-  }
+  if (!file) { alert("Selecione um PDF"); return }
+  if (!nome) { alert("Digite o nome do documento"); return }
 
   const formData = new FormData()
   formData.append("file", file)
@@ -481,24 +557,22 @@ async function uploadFinanceiro() {
   formData.append("tipo", tipo)
   formData.append("usuario", getUser())
 
-  const data = await apiFetch("/financeiro/upload", {
-    method: "POST",
-    body: formData
-  })
+  try {
+    const data = await enviarFinanceiroComProgresso(formData, file)
+    if (data?.error) { alert(data.error); resetarUploadFinanceiro(); return }
 
-  if (data?.error) {
-    alert(data.error)
-    return
+    alert("Documento financeiro adicionado com sucesso")
+    document.getElementById("finNome").value = ""
+    document.getElementById("finObservação").value = ""
+    document.getElementById("finFile").value = ""
+    resetarUploadFinanceiro()
+    fecharModalCriar()
+    carregarDados()
+  } catch (err) {
+    if (err?.cancelado) return
+    alert(err?.error || "Erro de conexão com servidor")
+    resetarUploadFinanceiro()
   }
-
-  alert("Documento financeiro adicionado com sucesso")
-
-  document.getElementById("finNome").value = ""
-  document.getElementById("finObservação").value = ""
-  document.getElementById("finFile").value = ""
-
-  fecharModalCriar()
-  carregarDados()
 }
 
 window.onclick = function(event) {

@@ -248,11 +248,16 @@ function fecharArquivados() {
 }
 
 async function carregarArquivados() {
-  const dados = await apiFetch("/arquivamentos")
-  if (!dados) return
-
-  arquivadosGlobal = dados
-  renderArquivados()
+  try {
+    const dados = await apiFetch("/arquivamentos")
+    arquivadosGlobal = Array.isArray(dados) ? dados : []
+    renderArquivados()
+  } catch (error) {
+    console.error("Erro ao carregar arquivados:", error)
+    arquivadosGlobal = []
+    renderArquivados()
+    alert(error.message || "Não foi possível carregar os documentos arquivados")
+  }
 }
 
 function renderArquivados() {
@@ -336,14 +341,19 @@ function formatarContagemRegressiva(doc) {
 async function arquivarDocumento(id) {
   if (!confirm("Deseja mover este documento para Arquivados? Ele ficará lá por 6 meses.")) return
 
-  const data = await apiFetch(`/documents/${id}`, { method: "DELETE" })
-  if (data?.error) {
-    alert(data.error)
-    return
-  }
+  try {
+    const data = await apiFetch(`/documents/${id}`, { method: "DELETE" })
+    alert(data?.msg || "Documento movido para Arquivados")
+    await carregarDados()
 
-  alert(data?.msg || "Documento movido para Arquivados")
-  await carregarDados()
+    const modalArquivados = document.getElementById("modalArquivados")
+    if (modalArquivados && getComputedStyle(modalArquivados).display !== "none") {
+      await carregarArquivados()
+    }
+  } catch (error) {
+    console.error("Erro ao arquivar documento:", error)
+    alert(error.message || "Não foi possível arquivar o documento")
+  }
 }
 
 async function excluirArquivamentoDefinitivamente(id) {
