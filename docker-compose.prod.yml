@@ -4,6 +4,12 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: inagro_protocolos_app
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+        compress: "true"
     restart: unless-stopped
     env_file:
       - .env.production
@@ -29,6 +35,12 @@ services:
   mongodb:
     image: mongo:8.0
     container_name: inagro_protocolos_mongodb
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+        compress: "true"
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
@@ -47,6 +59,12 @@ services:
   nginx:
     image: nginx:1.27-alpine
     container_name: inagro_protocolos_nginx
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+        compress: "true"
     restart: unless-stopped
     ports:
       - "80:80"
@@ -63,6 +81,12 @@ services:
 
   certbot:
     image: certbot/certbot:latest
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "5"
+        compress: "true"
     volumes:
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
